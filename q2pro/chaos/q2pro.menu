@@ -1,7 +1,7 @@
 include q2pro-common.menu
 
 begin main
-    title "QUAKE 2: Jump"
+    title "QUAKE 2: chaos"
     action "mods" pushmenu mods
     action "start server" pushmenu startserver
     blank
@@ -15,12 +15,12 @@ end
 
 begin game
     background #0000ff80
-    action "add time" "votetime 60; forcemenuoff"
-    blank
-    action "browse demos" pushmenu demos
+    action "menu" "menu; forcemenuoff"
     blank
     action "browse address book" pushmenu servers "favorites://" "file:///servers.lst" "broadcast://"
     action "browse q2servers.com" pushmenu servers "+http://q2servers.com/?raw=2"
+    blank
+    action "browse demos" pushmenu demos
     blank
     action "disconnect" "disconnect"
     action "quit" quit

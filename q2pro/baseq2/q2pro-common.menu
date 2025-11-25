@@ -39,12 +39,9 @@ begin mods
     title "Mods"
     action "3zb2" "game 3zb2"
     action "jump" "game jump"
-    action "quake2" "game ''"
-    action "single player" "game baseq2-sp"
-    action "single player vhs" "game baseq2-sp-vhs"
-    action "dday" "game dday"
-    action "openffa" "game openffa"
     action "opentdm" "game opentdm"
+    action "openffa" "game openffa"
+    action "multiplayer" "game ''"
     action "chaos" "game chaos"
 end
 

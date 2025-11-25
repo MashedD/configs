@@ -1,23 +1,15 @@
-q2pro/3zb2/customnumbers.pak
-q2pro/3zb2/itemSkinsQuakelands.pak
-q2pro/3zb2/skinPlayersHalfbrightBy4Bidden.pak
-q2pro/3zb2/weaponSkinsQuakelands.pak
-q2pro/baseq2/armor20v5.pak
-q2pro/baseq2/crosshairsQuake3.pak
-q2pro/baseq2/pent300v1.pak
-q2pro/baseq2/ps60v1.pak
-q2pro/baseq2/soundHandgrenadev1.pak
-q2pro/baseq2/soundsAmbientOFF.pak
-q2pro/baseq2/weapon30v1.pak
-q2pro/openffa/customnumbers.pak
-q2pro/openffa/itemSkinsQuakelands.pak
-q2pro/openffa/postexec.cfg
-q2pro/openffa/skinPlayersHalfbrightBy4Bidden.pak
-q2pro/openffa/weaponSkinsQuakelands.pak
-q2pro/opentdm/customnumbers.pak
-q2pro/opentdm/itemSkinsQuakelands.pak
-q2pro/opentdm/postexec.cfg
-q2pro/opentdm/skinPlayersHalfbrightBy4Bidden.pak
-q2pro/opentdm/weaponSkinsQuakelands.pak
-q2repro/baseq2/Chief_Q2R_Bright_Skins_v2.pak
+# TODO: Add demo folders
+*/demos/*
+*/screenshots/*
+*/logs/*
+*/config.cfg
+*/.conhistory
+*/.syshistory
+*/q2config.cfg
+*/debug.log
+*/27910
+*/ent
+*/global
+*/jumpdemo
+*/mapsent,p
 

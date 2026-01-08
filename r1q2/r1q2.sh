@@ -25,12 +25,12 @@ export MESA_VK_DEVICE_SELECT="1002:743f"
 MANGOHUD=""
 #[ -n "$(command -v mangohud 2>/dev/null)" ] && MANGOHUD="--mangoapp"
 #BACKEND=wayland
-# --backend $BACKEND 
+# --backend $BACKEND
 
 EXEC=""
 [ -n "$(command -v gamemoderun 2>/dev/null)" ] && EXEC="$EXEC gamemoderun"
 [ -n "$(command -v gamescope 2>/dev/null)" ] && \
     EXEC="$EXEC gamescope --expose-wayland -W $WIDTH -H $HEIGHT -r $REFRESH -f -S stretch --hide-cursor-delay 0 --force-grab-cursor $MANGOHUD --"
 [ -n "$(command -v mangohud 2>/dev/null)" ] && EXEC="$EXEC mangohud"
-$EXEC ./q2pro +set homedir . "$@"
+$EXEC ./quake2 +map q2dm1 "$@"
 

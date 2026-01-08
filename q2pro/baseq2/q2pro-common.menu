@@ -8,7 +8,9 @@ color disabled white
 
 begin startserver
     title "Start server"
-    strings "initial map" _ui_nextserver $$com_maplist
+
+    strings "initial map" _ui_nextserver "koldduel1" "ptrip" "q2deck" "q2dm1" "q2dm3" "q2duel1" "q2duel5" "q2rdm1" "q2rdm2" "q2rdm3" "q2rdm4" "q2rdm5" "q2rdm6" "q2rdm7" "q2rdm8" "q2rdm9" "q2rdm10" "q2rdm11" "q2rdm12" "q2rdm13" "q2rdm14" "q2rdm15" "tltf"
+
     values "rules" coop deathmatch cooperative
     field --integer --status "0 - no time limit" --width 3 "time limit" timelimit
     field --integer --status "0 - no frag limit" --width 3 "frag limit" fraglimit
@@ -41,6 +43,7 @@ begin mods
     action "jump" "game jump"
     action "opentdm" "game opentdm"
     action "openffa" "game openffa"
+    action "openra2" "game openra2"
     action "multiplayer" "game ''"
     action "chaos" "game chaos"
 end

@@ -1,7 +1,7 @@
 include q2pro-common.menu
 
 begin main
-    title "QUAKE 2"
+    title "QUAKE 2: openra2"
     action "mods" pushmenu mods
     action "start server" pushmenu startserver
     blank
@@ -18,10 +18,9 @@ begin game
     action "browse address book" pushmenu servers "favorites://" "file:///servers.lst" "broadcast://"
     action "browse q2servers.com" pushmenu servers "+http://q2servers.com/?raw=2"
     blank
-    action "disconnect" "disconnect"
-    blank
     action "browse demos" pushmenu demos
     blank
+    action "disconnect" "disconnect"
     action "quit" quit
 end
 

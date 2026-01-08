@@ -1,0 +1,348 @@
+diff --git a/binaries/client/Makefile b/binaries/client/Makefile
+index 83dd6c4..49256e7 100644
+--- a/binaries/client/Makefile
++++ b/binaries/client/Makefile
+@@ -9,10 +9,10 @@ quake2_SRC:=cl_cin.c cl_ents.c cl_fx.c cl_input.c cl_inv.c cl_main.c\
+ 	    sv_user.c sv_world.c \
+ 	    q_shlinux.c vid_menu.c vid_so.c sys_linux.c glob.c net_udp.c\
+ 	    q_shared.c pmove.c mersennetwister.c le_util.c\
+-	    le_physics.c redblack.c cd_linux.c snd_linux.c unzip.c ioapi.c
+-#	    al_linux.c qal_linux.c
++	    le_physics.c redblack.c cd_linux.c snd_linux.c unzip.c ioapi.c\
++	    al_linux.c qal_linux.c
+ 
+-#CFLAGS+=-DUSE_OPENAL
++CFLAGS+=-DUSE_OPENAL
+ quake2_OBJ:=$(quake2_SRC:.c=.o)
+ ALLSRC:=$(quake2_SRC)
+ 
+@@ -27,7 +27,7 @@ include ../make.inc
+ LDFLAGS+=-lm -lz
+ 
+ ifeq ($(shell uname),Linux)
+-LDFLAGS+=-ldl
++LDFLAGS+=-ldl -lopenal
+ endif
+ 
+ ifeq ($(shell uname),FreeBSD)
+diff --git a/binaries/make.inc b/binaries/make.inc
+index 562c4aa..0df3e69 100644
+--- a/binaries/make.inc
++++ b/binaries/make.inc
+@@ -1,4 +1,4 @@
+-CFLAGS+=-DNDEBUG -DLINUX -O2 -fno-strict-aliasing -Wall -ffloat-store -pipe -g -MF .depends/$*.d -MMD
++CFLAGS+=-DNDEBUG -DLINUX -O2 -fno-strict-aliasing -Wall -ffloat-store -pipe -g -MF .depends/$*.d -MMD -std=gnu99 -Wno-incompatible-pointer-types
+ ALLOBJ:=$(ALLSRC:.c=.o)
+ 
+ .PHONY: clean distclean
+diff --git a/binaries/ref_gl/Makefile b/binaries/ref_gl/Makefile
+index edf34b2..e25eab2 100644
+--- a/binaries/ref_gl/Makefile
++++ b/binaries/ref_gl/Makefile
+@@ -17,7 +17,7 @@ TARGETS:=ref_gl.so ref_gl-combine.so
+ 
+ include ../make.inc
+ 
+-LDFLAGS+=$(shell sdl-config --libs) -lm -lGL -ljpeg -lpng12
++LDFLAGS+=$(shell sdl-config --libs) -lm -lGL -ljpeg -lpng
+ 
+ ref_gl.so: $(ref_gl_OBJ)
+ 	$(CC) -shared -g -o $@ $^ $(LDFLAGS)
+diff --git a/client/client.h b/client/client.h
+index 724cba4..6fdfd6c 100644
+--- a/client/client.h
++++ b/client/client.h
+@@ -136,7 +136,7 @@ struct localent_s
+ //yummmm splash gibs death blood
+ #define MAX_LOCAL_ENTS 1024
+ 
+-localent_t cl_localents[MAX_LOCAL_ENTS];
++extern localent_t cl_localents[MAX_LOCAL_ENTS];
+ 
+ void Le_Reset (void);
+ 
+diff --git a/client/le_util.c b/client/le_util.c
+index ebe2338..a93a749 100644
+--- a/client/le_util.c
++++ b/client/le_util.c
+@@ -2,6 +2,8 @@
+ 
+ #include "client.h"
+ 
++localent_t cl_localents[MAX_LOCAL_ENTS];
++
+ int	localent_count = 0;
+ 
+ cvar_t	*cl_lents;
+diff --git a/client/qal.h b/client/qal.h
+index c62a41d..7e20676 100644
+--- a/client/qal.h
++++ b/client/qal.h
+@@ -26,80 +26,80 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ qboolean	QAL_Init (const char *driver);
+ void		QAL_Shutdown (void);
+ 
+-typedef ALCAPI ALCdevice *		(ALCAPIENTRY * ALCOPENDEVICE)(ALCubyte *deviceName);
+-typedef ALCAPI ALCvoid			(ALCAPIENTRY * ALCCLOSEDEVICE)(ALCdevice *device);
+-typedef ALCAPI ALCcontext *		(ALCAPIENTRY * ALCCREATECONTEXT)(ALCdevice *device, ALCint *attrList);
+-typedef ALCAPI ALCvoid			(ALCAPIENTRY * ALCDESTROYCONTEXT)(ALCcontext *context);
+-typedef ALCAPI ALCboolean		(ALCAPIENTRY * ALCMAKECONTEXTCURRENT)(ALCcontext *context);
+-typedef ALCAPI ALCvoid			(ALCAPIENTRY * ALCPROCESSCONTEXT)(ALCcontext *context);
+-typedef ALCAPI ALCvoid			(ALCAPIENTRY * ALCSUSPENDCONTEXT)(ALCcontext *context);
+-typedef ALCAPI ALCcontext *		(ALCAPIENTRY * ALCGETCURRENTCONTEXT)(ALCvoid);
+-typedef ALCAPI ALCdevice *		(ALCAPIENTRY * ALCGETCONTEXTSDEVICE)(ALCcontext *context);
+-typedef ALCAPI ALCubyte *		(ALCAPIENTRY * ALCGETSTRING)(ALCdevice *device, ALCenum param);
+-typedef ALCAPI ALCvoid			(ALCAPIENTRY * ALCGETINTEGERV)(ALCdevice *device, ALCenum param, ALCsizei size, ALCint *data);
+-typedef ALCAPI ALCenum			(ALCAPIENTRY * ALCGETERROR)(ALCdevice *device);
+-typedef ALCAPI ALCboolean		(ALCAPIENTRY * ALCISEXTENSIONPRESENT)(ALCdevice *device, ALCubyte *extName);
+-typedef ALCAPI ALCvoid *		(ALCAPIENTRY * ALCGETPROCADDRESS)(ALCdevice *device, ALCubyte *funcName);
+-typedef ALCAPI ALCenum			(ALCAPIENTRY * ALCGETENUMVALUE)(ALCdevice *device, ALCubyte *enumName);
+-
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALBUFFERDATA)(ALuint buffer, ALenum format, ALvoid *data, ALsizei size, ALsizei freq);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALDELETEBUFFERS)(ALsizei n, ALuint *buffers);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALDELETESOURCES)(ALsizei n, ALuint *sources);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALDISABLE)(ALenum capability);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALDISTANCEMODEL)(ALenum value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALDOPPLERFACTOR)(ALfloat value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALDOPPLERVELOCITY)(ALfloat value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALENABLE)(ALenum capability);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGENBUFFERS)(ALsizei n, ALuint *buffers);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGENSOURCES)(ALsizei n, ALuint *sources);
+-typedef ALAPI ALboolean			(ALAPIENTRY * ALGETBOOLEAN)(ALenum param);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETBOOLEANV)(ALenum param, ALboolean *data);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETBUFFERF)(ALuint buffer, ALenum param, ALfloat *value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETBUFFERI)(ALuint buffer, ALenum param, ALint *value);
+-typedef ALAPI ALdouble			(ALAPIENTRY * ALGETDOUBLE)(ALenum param);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETDOUBLEV)(ALenum param, ALdouble *data);
+-typedef ALAPI ALenum			(ALAPIENTRY * ALGETENUMVALUE)(ALubyte *enumName);
+-typedef ALAPI ALenum			(ALAPIENTRY * ALGETERROR)(ALvoid);
+-typedef ALAPI ALfloat			(ALAPIENTRY * ALGETFLOAT)(ALenum param);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETFLOATV)(ALenum param, ALfloat *data);
+-typedef ALAPI ALint				(ALAPIENTRY * ALGETINTEGER)(ALenum param);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETINTEGERV)(ALenum param, ALint *data);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETLISTENER3F)(ALenum param, ALfloat *v1, ALfloat *v2, ALfloat *v3);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETLISTENERF)(ALenum param, ALfloat *value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETLISTENERFV)(ALenum param, ALfloat *values);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETLISTENERI)(ALenum param, ALint *value);
+-typedef ALAPI ALvoid *			(ALAPIENTRY * ALGETPROCADDRESS)(ALubyte *funcName);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETSOURCE3F)(ALuint source, ALenum param, ALfloat *v1, ALfloat *v2, ALfloat *v3);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETSOURCEF)(ALuint source, ALenum param, ALfloat *value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETSOURCEFV)(ALuint source, ALenum param, ALfloat *values);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALGETSOURCEI)(ALuint source, ALenum param, ALint *value);
+-typedef ALAPI ALubyte *			(ALAPIENTRY * ALGETSTRING)(ALenum param);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALHINT)(ALenum target, ALenum mode);
+-typedef ALAPI ALboolean			(ALAPIENTRY * ALISBUFFER)(ALuint buffer);
+-typedef ALAPI ALboolean			(ALAPIENTRY * ALISENABLED)(ALenum capability);
+-typedef ALAPI ALboolean			(ALAPIENTRY * ALISEXTENSIONPRESENT)(ALubyte *extName);
+-typedef ALAPI ALboolean			(ALAPIENTRY * ALISSOURCE)(ALuint source);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALLISTENER3F)(ALenum param, ALfloat v1, ALfloat v2, ALfloat v3);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALLISTENERF)(ALenum param, ALfloat value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALLISTENERFV)(ALenum param, ALfloat *values);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALLISTENERI)(ALenum param, ALint value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCE3F)(ALuint source, ALenum param, ALfloat v1, ALfloat v2, ALfloat v3);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEF)(ALuint source, ALenum param, ALfloat value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEFV)(ALuint source, ALenum param, ALfloat *values);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEI)(ALuint source, ALenum param, ALint value);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEPAUSE)(ALuint source);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEPAUSEV)(ALsizei n, ALuint *sources);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEPLAY)(ALuint source);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEPLAYV)(ALsizei n, ALuint *sources);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEQUEUEBUFFERS)(ALuint source, ALsizei n, ALuint *buffers);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEREWIND)(ALuint source);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEREWINDV)(ALsizei n, ALuint *sources);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCESTOP)(ALuint source);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCESTOPV)(ALsizei n, ALuint *sources);
+-typedef ALAPI ALvoid			(ALAPIENTRY * ALSOURCEUNQUEUEBUFFERS)(ALuint source, ALsizei n, ALuint *buffers);
+-
+-typedef ALAPI ALenum			(ALAPIENTRY * ALEAXSET)(const GUID*, ALuint, ALuint, ALvoid *, ALuint);
+-typedef ALAPI ALenum			(ALAPIENTRY * ALEAXGET)(const GUID*, ALuint, ALuint, ALvoid *, ALuint);
++typedef ALCdevice *		(ALCAPIENTRY * ALCOPENDEVICE)(ALCubyte *deviceName);
++typedef ALCvoid			(ALCAPIENTRY * ALCCLOSEDEVICE)(ALCdevice *device);
++typedef ALCcontext *		(ALCAPIENTRY * ALCCREATECONTEXT)(ALCdevice *device, ALCint *attrList);
++typedef ALCvoid			(ALCAPIENTRY * ALCDESTROYCONTEXT)(ALCcontext *context);
++typedef ALCboolean		(ALCAPIENTRY * ALCMAKECONTEXTCURRENT)(ALCcontext *context);
++typedef ALCvoid			(ALCAPIENTRY * ALCPROCESSCONTEXT)(ALCcontext *context);
++typedef ALCvoid			(ALCAPIENTRY * ALCSUSPENDCONTEXT)(ALCcontext *context);
++typedef ALCcontext *		(ALCAPIENTRY * ALCGETCURRENTCONTEXT)(ALCvoid);
++typedef ALCdevice *		(ALCAPIENTRY * ALCGETCONTEXTSDEVICE)(ALCcontext *context);
++typedef ALCubyte *		(ALCAPIENTRY * ALCGETSTRING)(ALCdevice *device, ALCenum param);
++typedef ALCvoid			(ALCAPIENTRY * ALCGETINTEGERV)(ALCdevice *device, ALCenum param, ALCsizei size, ALCint *data);
++typedef ALCenum			(ALCAPIENTRY * ALCGETERROR)(ALCdevice *device);
++typedef ALCboolean		(ALCAPIENTRY * ALCISEXTENSIONPRESENT)(ALCdevice *device, ALCubyte *extName);
++typedef ALCvoid *		(ALCAPIENTRY * ALCGETPROCADDRESS)(ALCdevice *device, ALCubyte *funcName);
++typedef ALCenum			(ALCAPIENTRY * ALCGETENUMVALUE)(ALCdevice *device, ALCubyte *enumName);
++
++typedef ALvoid			(ALAPIENTRY * ALBUFFERDATA)(ALuint buffer, ALenum format, ALvoid *data, ALsizei size, ALsizei freq);
++typedef ALvoid			(ALAPIENTRY * ALDELETEBUFFERS)(ALsizei n, ALuint *buffers);
++typedef ALvoid			(ALAPIENTRY * ALDELETESOURCES)(ALsizei n, ALuint *sources);
++typedef ALvoid			(ALAPIENTRY * ALDISABLE)(ALenum capability);
++typedef ALvoid			(ALAPIENTRY * ALDISTANCEMODEL)(ALenum value);
++typedef ALvoid			(ALAPIENTRY * ALDOPPLERFACTOR)(ALfloat value);
++typedef ALvoid			(ALAPIENTRY * ALDOPPLERVELOCITY)(ALfloat value);
++typedef ALvoid			(ALAPIENTRY * ALENABLE)(ALenum capability);
++typedef ALvoid			(ALAPIENTRY * ALGENBUFFERS)(ALsizei n, ALuint *buffers);
++typedef ALvoid			(ALAPIENTRY * ALGENSOURCES)(ALsizei n, ALuint *sources);
++typedef ALboolean			(ALAPIENTRY * ALGETBOOLEAN)(ALenum param);
++typedef ALvoid			(ALAPIENTRY * ALGETBOOLEANV)(ALenum param, ALboolean *data);
++typedef ALvoid			(ALAPIENTRY * ALGETBUFFERF)(ALuint buffer, ALenum param, ALfloat *value);
++typedef ALvoid			(ALAPIENTRY * ALGETBUFFERI)(ALuint buffer, ALenum param, ALint *value);
++typedef ALdouble			(ALAPIENTRY * ALGETDOUBLE)(ALenum param);
++typedef ALvoid			(ALAPIENTRY * ALGETDOUBLEV)(ALenum param, ALdouble *data);
++typedef ALenum			(ALAPIENTRY * ALGETENUMVALUE)(ALubyte *enumName);
++typedef ALenum			(ALAPIENTRY * ALGETERROR)(ALvoid);
++typedef ALfloat			(ALAPIENTRY * ALGETFLOAT)(ALenum param);
++typedef ALvoid			(ALAPIENTRY * ALGETFLOATV)(ALenum param, ALfloat *data);
++typedef ALint				(ALAPIENTRY * ALGETINTEGER)(ALenum param);
++typedef ALvoid			(ALAPIENTRY * ALGETINTEGERV)(ALenum param, ALint *data);
++typedef ALvoid			(ALAPIENTRY * ALGETLISTENER3F)(ALenum param, ALfloat *v1, ALfloat *v2, ALfloat *v3);
++typedef ALvoid			(ALAPIENTRY * ALGETLISTENERF)(ALenum param, ALfloat *value);
++typedef ALvoid			(ALAPIENTRY * ALGETLISTENERFV)(ALenum param, ALfloat *values);
++typedef ALvoid			(ALAPIENTRY * ALGETLISTENERI)(ALenum param, ALint *value);
++typedef ALvoid *			(ALAPIENTRY * ALGETPROCADDRESS)(ALubyte *funcName);
++typedef ALvoid			(ALAPIENTRY * ALGETSOURCE3F)(ALuint source, ALenum param, ALfloat *v1, ALfloat *v2, ALfloat *v3);
++typedef ALvoid			(ALAPIENTRY * ALGETSOURCEF)(ALuint source, ALenum param, ALfloat *value);
++typedef ALvoid			(ALAPIENTRY * ALGETSOURCEFV)(ALuint source, ALenum param, ALfloat *values);
++typedef ALvoid			(ALAPIENTRY * ALGETSOURCEI)(ALuint source, ALenum param, ALint *value);
++typedef ALubyte *			(ALAPIENTRY * ALGETSTRING)(ALenum param);
++typedef ALvoid			(ALAPIENTRY * ALHINT)(ALenum target, ALenum mode);
++typedef ALboolean			(ALAPIENTRY * ALISBUFFER)(ALuint buffer);
++typedef ALboolean			(ALAPIENTRY * ALISENABLED)(ALenum capability);
++typedef ALboolean			(ALAPIENTRY * ALISEXTENSIONPRESENT)(ALubyte *extName);
++typedef ALboolean			(ALAPIENTRY * ALISSOURCE)(ALuint source);
++typedef ALvoid			(ALAPIENTRY * ALLISTENER3F)(ALenum param, ALfloat v1, ALfloat v2, ALfloat v3);
++typedef ALvoid			(ALAPIENTRY * ALLISTENERF)(ALenum param, ALfloat value);
++typedef ALvoid			(ALAPIENTRY * ALLISTENERFV)(ALenum param, ALfloat *values);
++typedef ALvoid			(ALAPIENTRY * ALLISTENERI)(ALenum param, ALint value);
++typedef ALvoid			(ALAPIENTRY * ALSOURCE3F)(ALuint source, ALenum param, ALfloat v1, ALfloat v2, ALfloat v3);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEF)(ALuint source, ALenum param, ALfloat value);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEFV)(ALuint source, ALenum param, ALfloat *values);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEI)(ALuint source, ALenum param, ALint value);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEPAUSE)(ALuint source);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEPAUSEV)(ALsizei n, ALuint *sources);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEPLAY)(ALuint source);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEPLAYV)(ALsizei n, ALuint *sources);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEQUEUEBUFFERS)(ALuint source, ALsizei n, ALuint *buffers);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEREWIND)(ALuint source);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEREWINDV)(ALsizei n, ALuint *sources);
++typedef ALvoid			(ALAPIENTRY * ALSOURCESTOP)(ALuint source);
++typedef ALvoid			(ALAPIENTRY * ALSOURCESTOPV)(ALsizei n, ALuint *sources);
++typedef ALvoid			(ALAPIENTRY * ALSOURCEUNQUEUEBUFFERS)(ALuint source, ALsizei n, ALuint *buffers);
++
++typedef ALenum			(ALAPIENTRY * ALEAXSET)(const GUID*, ALuint, ALuint, ALvoid *, ALuint);
++typedef ALenum			(ALAPIENTRY * ALEAXGET)(const GUID*, ALuint, ALuint, ALvoid *, ALuint);
+ 
+ // =====================================================================
+ 
+diff --git a/linux/snd_linux.c b/linux/snd_linux.c
+index c7a71ee..4cb1f99 100644
+--- a/linux/snd_linux.c
++++ b/linux/snd_linux.c
+@@ -40,7 +40,7 @@ qboolean SNDDMA_Init(int firsttime)
+ 		sndbits = Cvar_Get("sndbits", "16", CVAR_ARCHIVE);
+ 		sndspeed = Cvar_Get("sndspeed", "0", CVAR_ARCHIVE);
+ 		sndchannels = Cvar_Get("sndchannels", "2", CVAR_ARCHIVE);
+-		snddevice = Cvar_Get("snddevice", "/dev/dsp", CVAR_ARCHIVE);
++		snddevice = Cvar_Get("snddevice", "pulse", CVAR_ARCHIVE);
+ 	}
+ 
+ // open /dev/dsp, confirm capability to mmap, and get size of dma buffer
+diff --git a/ref_gl/gl_image.c b/ref_gl/gl_image.c
+index 5e39628..6eefe26 100644
+--- a/ref_gl/gl_image.c
++++ b/ref_gl/gl_image.c
+@@ -721,7 +721,7 @@ void LoadPNG (const char *name, byte **pic, int *width, int *height)
+ 
+ 	png_read_info(png_ptr, info_ptr);
+ 
+-	if (info_ptr->height > MAX_TEXTURE_DIMENSIONS)
++	if (png_get_image_height(png_ptr, info_ptr) > MAX_TEXTURE_DIMENSIONS)
+ 	{
+         png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+ 		ri.FS_FreeFile (PngFileBuffer.Buffer);
+@@ -729,28 +729,28 @@ void LoadPNG (const char *name, byte **pic, int *width, int *height)
+ 		return;
+ 	}
+ 
+-	if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
++	if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE)
+ 	{
+ 		png_set_palette_to_rgb (png_ptr);
+ 		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+ 	}
+ 
+-	if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
++	if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB)
+ 		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+ 
+-	if ((info_ptr->color_type == PNG_COLOR_TYPE_GRAY) && info_ptr->bit_depth < 8)
+-		png_set_gray_1_2_4_to_8(png_ptr);
++	if ((png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) && png_get_bit_depth(png_ptr, info_ptr) < 8)
++		png_set_expand_gray_1_2_4_to_8(png_ptr);
+ 
+ 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+ 		png_set_tRNS_to_alpha(png_ptr);
+ 
+-	if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY || info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
++	if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY || png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA)
+ 		png_set_gray_to_rgb(png_ptr);
+ 
+-	if (info_ptr->bit_depth == 16)
++	if (png_get_bit_depth(png_ptr, info_ptr) == 16)
+ 		png_set_strip_16(png_ptr);
+ 
+-	if (info_ptr->bit_depth < 8)
++	if (png_get_bit_depth(png_ptr, info_ptr) < 8)
+         png_set_packing(png_ptr);
+ 
+ 	if (png_get_gAMA(png_ptr, info_ptr, &file_gamma))
+@@ -760,15 +760,15 @@ void LoadPNG (const char *name, byte **pic, int *width, int *height)
+ 
+ 	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+ 
+-	*pic = malloc (info_ptr->height * rowbytes);
++	*pic = malloc (png_get_image_height(png_ptr, info_ptr) * rowbytes);
+ 
+-	for (i = 0; i < info_ptr->height; i++)
++	for (i = 0; i < png_get_image_height(png_ptr, info_ptr); i++)
+ 		row_pointers[i] = *pic + i*rowbytes;
+ 
+ 	png_read_image(png_ptr, row_pointers);
+ 
+-	*width = info_ptr->width;
+-	*height = info_ptr->height;
++	*width = png_get_image_width(png_ptr, info_ptr);
++	*height = png_get_image_height(png_ptr, info_ptr);
+ 
+ 	png_read_end(png_ptr, end_info);
+ 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+@@ -1520,7 +1520,7 @@ void EXPORT jpg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+     cinfo->src->bytes_in_buffer -= (size_t) num_bytes;
+ }
+ 
+-void jpeg_mem_src (j_decompress_ptr cinfo, byte *mem, int len)
++void local_jpeg_mem_src (j_decompress_ptr cinfo, byte *mem, int len)
+ {
+     cinfo->src = (struct jpeg_source_mgr *)(*cinfo->mem->alloc_small)((j_common_ptr) cinfo, JPOOL_PERMANENT, sizeof(struct jpeg_source_mgr));
+     cinfo->src->init_source = jpg_null;
+@@ -1561,7 +1561,7 @@ void LoadJPG (const char *filename, byte **pic, int *width, int *height)
+ 
+ 	cinfo.err = jpeg_std_error(&jerr);
+ 	jpeg_create_decompress(&cinfo);
+-	jpeg_mem_src(&cinfo, rawdata, rawsize);
++	local_jpeg_mem_src(&cinfo, rawdata, rawsize);
+ 	jpeg_read_header(&cinfo, true);
+ 	jpeg_start_decompress(&cinfo);
+ 
+diff --git a/server/sv_game.c b/server/sv_game.c
+index 8871f02..ce40e97 100644
+--- a/server/sv_game.c
++++ b/server/sv_game.c
+@@ -301,7 +301,7 @@ void EXPORT PF_setmodel (edict_t *ent, const char *name)
+ 
+ }
+ 
+-__inline char *SV_FixPlayerSkin (char *val, char *player_name)
++static char *SV_FixPlayerSkin (char *val, char *player_name)
+ {
+ 	static char	fixed_skin[MAX_QPATH];
+ 

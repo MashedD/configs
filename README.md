@@ -18,7 +18,7 @@ Compiling:
 sudo pacman -S libpng sdl12-compat
 git clone https://github.com/tastyspleen/r1q2-archive.git
 cd r1q2-archive
-git apply r1q2.diff # Copy it from `q2-patches/r1q2.diff` beforehand
+git apply r1q2.diff # Copy it from `quake2/patches/r1q2.diff` beforehand
 # Patch is base partially on:
 # - https://cgit.freebsd.org/ports/tree/games/r1q2/files
 # - https://www.reddit.com/r/linuxquestions/comments/lwi15/problem_compiling_r1q2_on_x86_64_lmde/
@@ -59,12 +59,12 @@ set freelook "1"
 
 ## Mods
 
-- [3zb2-zigflag](https://github.com/DirtBagXon/3zb2-zigflag) - apply patch `q2-patches/3zb2-zigflag.diff`. Those are best working bots for any map.
-- [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `q2-patches/jump.diff`. Newest sources were not uploaded yet. In case global integration (downloading and replaying demos) is not downloading, reach out to Grish. Additionally you'll need gfx for keys and server config. And some maps.
+- [3zb2-zigflag](https://github.com/DirtBagXon/3zb2-zigflag) - apply patch `quake2/patches/3zb2-zigflag.diff`. Those are best working bots for any map.
+- [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `quake2/patches/jump.diff`. Newest sources were not uploaded yet. In case global integration (downloading and replaying demos) is not downloading, reach out to Grish. Additionally you'll need gfx for keys and server config. And some maps.
 - [openffa](https://github.com/skullernet/openffa)
-- [opentdm](https://github.com/packetflinger/opentdm) - apply patch `q2-patches/opentdm.diff`.
+- [opentdm](https://github.com/packetflinger/opentdm) - apply patch `quake2/patches/opentdm.diff`.
 - [openra2](https://github.com/packetflinger/openra2)
-- [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `q2-patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `q2-patches/DDaynormandyFPS-src-dday.diff`, `q2-patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures)
+- [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `quake2/patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `quake2/patches/DDaynormandyFPS-src-dday.diff`, `quake2/patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures)
 - [Chaos](https://github.com/aginies/quake2)
 
 ## Paks

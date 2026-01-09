@@ -4,13 +4,12 @@ cd "$(dirname -- "$(readlink -f -- "$0")")"
 # Use ATI Radeon RX 6500M in my laptop instead of integrated ATI Radeon 680M
 export DRI_PRIME="1" MESA_VK_DEVICE_SELECT="1002:743f"
 
-gamemoderun gamescope \
-    --expose-wayland \
-    -r 144 \
+gamescope \
     -f \
-    --hide-cursor-delay 0 \
+    --backend sdl \
     --force-grab-cursor \
     -W 1280 -H 800 \
+    -r 144 \
     -S stretch \
-    -- ./quake2 +map q2dm1 +set cheats 1 "$@"
+    -- gamemoderun ./quake2 +map q2dm1 "$@"
 

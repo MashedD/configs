@@ -6,9 +6,9 @@ export MANGOHUD_CONFIG="gpu_name,no_display"
 # Use ATI Radeon RX 6500M in my laptop instead of integrated ATI Radeon 680M
 export DRI_PRIME="1" MESA_VK_DEVICE_SELECT="1002:743f"
 
-gamemoderun gamescope \
+gamescope \
     --mangoapp \
-    --expose-wayland --backend wayland \
+    --expose-wayland --backend sdl \
     --adaptive-sync \
     -r 144 \
     -f \
@@ -16,5 +16,5 @@ gamemoderun gamescope \
     --force-grab-cursor \
     -W 1280 -H 800 \
     -S stretch \
-    -- mangohud ./q2pro +set homedir . "$@"
+    -- gamemoderun mangohud ./q2pro +set homedir . "$@"
 

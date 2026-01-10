@@ -12,16 +12,14 @@ Configs for games:
 
 - [r1q2](https://github.com/tastyspleen/r1q2-archive)
 
-Compiling:
+Building:
 
 ```bash
-sudo pacman -S libpng sdl12-compat
+sudo pacman -S libpng sdl12-compat # Arch/Artix/CachyOS/Manjaro/...
 git clone https://github.com/tastyspleen/r1q2-archive.git
 cd r1q2-archive
-git apply r1q2.diff # Copy it from `quake2/patches/r1q2.diff` beforehand
-# Patch is base partially on:
-# - https://cgit.freebsd.org/ports/tree/games/r1q2/files
-# - https://www.reddit.com/r/linuxquestions/comments/lwi15/problem_compiling_r1q2_on_x86_64_lmde/
+wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/r1q2.diff
+git apply r1q2.diff
 cd binaries
 mkdir -p {r1q2ded,client,game,ref_gl}/.depends
 make

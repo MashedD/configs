@@ -29,10 +29,10 @@ Copy files that were created to where your `r1q2` will be, like so:
 (all of them should have execute permissions)
 
 ```bash
+baseq2/gamex86_64.so
 quake2
 r1q2ded
 ref_gl.so
-baseq2/gamex86_64.so
 ```
 
 Now copy files from non-remastered Quake 2:

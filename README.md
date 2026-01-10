@@ -25,26 +25,26 @@ mkdir -p {r1q2ded,client,game,ref_gl}/.depends
 make
 ```
 
-Copy files there were created to locations like so, all of them should have
-execute permissions:
+Copy files that were created to where your `r1q2` will be, like so:
+(all of them should have execute permissions)
 
 ```bash
-r1q2/quake2
-r1q2/r1q2ded
-r1q2/ref_gl.so
-r1q2/baseq2/gamex86_64.so
+quake2
+r1q2ded
+ref_gl.so
+baseq2/gamex86_64.so
 ```
 
 Now copy files from non-remastered Quake 2:
 
 ```
-r1q2/baseq2/players/
-r1q2/baseq2/pak0.pak
-r1q2/baseq2/pak1.pak
-r1q2/baseq2/pak2.pak
+baseq2/players/
+baseq2/pak0.pak
+baseq2/pak1.pak
+baseq2/pak2.pak
 ```
 
-Create `r1q2/baseq2/autoexec.cfg` with at least:
+Create `baseq2/autoexec.cfg` with at least:
 
 ```
 set vid_ref "gl" // To use ref_gl.so

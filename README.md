@@ -67,7 +67,7 @@ set freelook "1"
 
 ## Paks
 
-TODO: --Get paks from [quake2download.pl](https://quake2download.pl).--
+TODO: Get paks from [quake2download.pl](https://quake2download.pl).
 
 ## Remastered
 

@@ -48,6 +48,19 @@ index edf34b2..e25eab2 100644
  
  ref_gl.so: $(ref_gl_OBJ)
  	$(CC) -shared -g -o $@ $^ $(LDFLAGS)
+diff --git a/client/cl_main.c b/client/cl_main.c
+index 1fc123d..85baf42 100644
+--- a/client/cl_main.c
++++ b/client/cl_main.c
+@@ -3066,7 +3066,7 @@ skipplayer:;
+ 
+ 		CM_LoadMap (cl.configstrings[CS_MODELS+1], true, &map_checksum);
+ 
+-		if (map_checksum && map_checksum != strtoul(cl.configstrings[CS_MAPCHECKSUM], NULL, 10)) {
++		if (map_checksum && map_checksum != atoi(cl.configstrings[CS_MAPCHECKSUM])) {
+ 			Com_Error (ERR_DROP, "Local map version differs from server: 0x%.8x != 0x%.8x",
+ 				map_checksum, atoi(cl.configstrings[CS_MAPCHECKSUM]));
+ 			return;
 diff --git a/client/client.h b/client/client.h
 index 724cba4..6fdfd6c 100644
 --- a/client/client.h

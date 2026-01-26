@@ -119,6 +119,17 @@ meson setup build-lin64
 meson compile -C build-lin64
 ```
 
+To play, copy files from non-remastered Quake 2:
+
+```
+baseq2/players/
+baseq2/pak0.pak
+baseq2/pak1.pak
+baseq2/pak2.pak
+```
+
+Additionally Copy file `src/client/ui/q2pro.menu` to `baseq2` folder.
+
 - [r1q2](https://github.com/tastyspleen/r1q2-archive)
 
 Building:

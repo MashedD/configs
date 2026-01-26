@@ -10,6 +10,115 @@ Configs for games:
 
 - [q2pro](https://github.com/vloup/q2pro) - Skuller's repo doesn't longer exists, so here's a mirror. [Another Mirror](https://code.nephatrine.net/QuakeArchive/q2pro)
 
+Building:
+
+```bash
+#
+# q2pro: building on Linux
+# Tested on CachyOS
+#
+
+# Common steps
+sudo pacman -S meson ninja pkgconaf
+git clone https://github.com/vloup/q2pro
+cd q2pro
+
+cat > static-zlib.patch << 'EOF'
+diff --git a/meson.build b/meson.build
+index 72394eac..c6ef83fd 100644
+--- a/meson.build
++++ b/meson.build
+@@ -257,6 +257,7 @@ texture_formats = []
+ fallback_opt = ['default_library=static']
+
+ zlib = dependency('zlib',
++  static:          true,
+   fallback:        'zlib-ng',
+   required:        get_option('zlib'),
+   default_options: fallback_opt + [ 'tests=disabled', 'zlib-compat=true', 'force-sse2=true' ],
+EOF
+patch -p1 < static-zlib.patch
+rm -f static-zlib.patch
+
+# Windows 64-bit
+sudo pacman -S \
+    mingw-w64-tools \
+    mingw-w64-binutils \
+    mingw-w64-crt \
+    mingw-w64-gcc \
+    mingw-w64-headers \
+    mingw-w64-winpthreads
+paru -S \
+    mingw-w64-zlib \
+    mingw-w64-ffmpeg \
+    mingw-w64-pkg-config
+cat > cross-mingw64.txt << 'EOF'
+[binaries]
+c = '/usr/bin/x86_64-w64-mingw32-gcc'
+cpp = '/usr/bin/x86_64-w64-mingw32-g++'
+ar = '/usr/bin/x86_64-w64-mingw32-ar'
+strip = '/usr/bin/x86_64-w64-mingw32-strip'
+windres = '/usr/bin/x86_64-w64-mingw32-windres'
+pkgconfig = '/usr/bin/x86_64-w64-mingw32-pkg-config'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[properties]
+needs_exe_wrapper = true
+EOF
+rm -rf build-win64
+meson setup build-win64 \
+    --cross-file cross-mingw64.txt \
+    --buildtype=release \
+    -Db_lto=true \
+    -Db_staticpic=true \
+    -Db_pie=false
+meson compile -C build-win64
+
+#
+# Windows 32-bit
+#
+paru -S llvm-mingw-w64-toolchain-ucrt-bin
+cat > cross-mingw32.txt << 'EOF'
+[binaries]
+c       = '/usr/bin/i686-w64-mingw32-gcc'
+cpp     = '/usr/bin/i686-w64-mingw32-g++'
+ar      = '/usr/bin/i686-w64-mingw32-ar'
+strip   = '/usr/bin/i686-w64-mingw32-strip'
+windres = '/usr/bin/i686-w64-mingw32-windres'
+pkgconfig = '/usr/bin/i686-w64-mingw32-pkg-config'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86'
+cpu = 'i686'
+endian = 'little'
+
+[properties]
+needs_exe_wrapper = true
+pkg_config_libdir = ['/usr/i686-w64-mingw32/lib/pkgconfig']
+EOF
+rm -rf build-win32
+meson setup build-win32 \
+  --cross-file cross-mingw32.txt \
+  --buildtype=release \
+  -Db_lto=true \
+  -Db_staticpic=true \
+  -Db_pie=false
+meson compile -C build-win32
+
+#
+# Linux 64-bit
+#
+
+meson setup build-lin64
+meson compile -C build-lin64
+```
+
 - [r1q2](https://github.com/tastyspleen/r1q2-archive)
 
 Building:

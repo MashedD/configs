@@ -1,8 +1,8 @@
 diff --git a/g_local.h b/g_local.h
-index c870048..b167530 100644
+index f65e1f1..f22a63f 100644
 --- a/g_local.h
 +++ b/g_local.h
-@@ -1353,10 +1353,10 @@ struct edict_s
+@@ -1360,10 +1360,10 @@ struct edict_s
  
  };
  
@@ -16,53 +16,63 @@ index c870048..b167530 100644
 -#include "global.h"
 \ No newline at end of file
 +#include "global.h"
-diff --git a/jumpmod.c b/jumpmod.c
-index 9d20221..da5845b 100644
---- a/jumpmod.c
-+++ b/jumpmod.c
-@@ -13,6 +13,7 @@
- #include <stdlib.h>
- #include <string.h>
- 
+diff --git a/global.c b/global.c
+index 72f4752..69290b9 100644
+--- a/global.c
++++ b/global.c
+@@ -1389,3 +1389,7 @@ void Display_Dual_Scoreboards()
+ 	gi.WriteByte(svc_layout);
+ 	gi.WriteString(string);
+ }
++
++int ESF_debug = false;
 +html_data_t html_data;
++
+diff --git a/global.h b/global.h
+index edd9d0a..7e75920 100644
+--- a/global.h
++++ b/global.h
+@@ -38,7 +38,7 @@ typedef struct AsyncFile {
+     int completed;         // 0 = pending, 1 = done
+     int success;           // 0 = failed, 1 = succeeded
+     CURL *easy_handle;     // handle for non-blocking
+-	FILE *fp			   // store opened tmp file
++    FILE *fp;              // store opened tmp file
+ } AsyncFile;
  
- int curclients = 0;
- int activeclients = 0;
+ typedef struct AsyncStage {
+@@ -123,4 +123,4 @@ struct http_get_struct
+ // Main struct array to store the global scores
+ extern sorted_remote_map_best_times_record sorted_remote_map_best_times[(MAX_HIGHSCORES*MAX_REMOTE_HOSTS)+MAX_HIGHSCORES];
+ 
+-#endif
+\ No newline at end of file
++#endif
 diff --git a/jumpmod.h b/jumpmod.h
-index 5eeecfa..977f789 100644
+index 8743674..04cce14 100644
 --- a/jumpmod.h
 +++ b/jumpmod.h
-@@ -748,7 +748,6 @@ typedef struct {
+@@ -750,7 +750,7 @@ typedef struct {
  	char tplate[SIZEOF_HTML_BUFFER];
  	int len;
  } html_data_t;
 -html_data_t html_data;
++extern html_data_t html_data;
  
  #define HTML_TEMPLATE_POSITION "$template_position$"
  #define HTML_TEMPLATE_MAPBESTTIME "$template_mapbesttime$"
 diff --git a/makefile b/makefile
-index cf7feae..4ea7a32 100644
+index cf7feae..c76c71e 100644
 --- a/makefile
 +++ b/makefile
-@@ -4,7 +4,7 @@
+@@ -4,8 +4,8 @@
  CC = gcc
  # CFLAGS = -Wall -fPIC -Dstricmp=strcasecmp
  # CFLAGS = -Wall -fPIC -Dstricmp=strcasecmp -Wno-unused-result
 -CFLAGS = -w -fPIC -Dstricmp=strcasecmp -Wno-unused-result
-+CFLAGS = -w -fPIC -Dstricmp=strcasecmp -Wno-unused-result -Wno-implicit-function-declaration -Wno-incompatible-pointer-types
- LDFLAGS = -ldl -lm -shared -lcurl
+-LDFLAGS = -ldl -lm -shared -lcurl
++CFLAGS = -std=gnu17 -w -fPIC -Dstricmp=strcasecmp -Wno-unused-result -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast
++LDFLAGS = -fPIC -ldl -lm -shared -lcurl
  
  # Project files
-diff --git a/p_client.c b/p_client.c
-index e9d4cda..61c8cd2 100644
---- a/p_client.c
-+++ b/p_client.c
-@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- //#include "p_hook.h"
- #include "m_player.h"
- 
-+int ESF_debug;
-+
- void SP_misc_teleporter_dest (edict_t *ent);
- 
- //
+ GAME_OBJS = \

@@ -178,7 +178,7 @@ set freelook "1"
 ## Mods
 
 - [3zb2-zigflag](https://github.com/DirtBagXon/3zb2-zigflag) - apply patch `quake2/patches/3zb2-zigflag.diff`. Those are best working bots for any map.
-- [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `quake2/patches/jump.diff`. Newest sources were not uploaded yet. In case global integration (downloading and replaying demos) is not downloading, reach out to Grish. Additionally you'll need gfx for keys and server config. And some maps.
+- [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `quake2/patches/jump.diff`. Additionally you'll need gfx for keys and server config. And some maps.
 - [openffa](https://github.com/skullernet/openffa)
 - [opentdm](https://github.com/packetflinger/opentdm) - apply patch `quake2/patches/opentdm.diff`.
 - [openra2](https://github.com/packetflinger/openra2)

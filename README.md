@@ -115,7 +115,7 @@ meson compile -C build-win32
 # Linux 64-bit
 #
 
-meson setup build-lin64
+meson setup build-lin64 --buildtype=release
 meson compile -C build-lin64
 ```
 

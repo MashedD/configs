@@ -28,26 +28,34 @@ index 72f4752..69290b9 100644
 +int ESF_debug = false;
 +html_data_t html_data;
 +
-diff --git a/global.h b/global.h
-index edd9d0a..7e75920 100644
---- a/global.h
-+++ b/global.h
-@@ -38,7 +38,7 @@ typedef struct AsyncFile {
-     int completed;         // 0 = pending, 1 = done
-     int success;           // 0 = failed, 1 = succeeded
-     CURL *easy_handle;     // handle for non-blocking
--	FILE *fp			   // store opened tmp file
-+    FILE *fp;              // store opened tmp file
- } AsyncFile;
+diff --git a/jumpmod.c b/jumpmod.c
+index 908524e..af2c77e 100644
+--- a/jumpmod.c
++++ b/jumpmod.c
+@@ -14338,6 +14338,7 @@ int	curtime;
+ #ifdef _WIN32
+ int Sys_Milliseconds (void)
+ {
++/*
+ 	static int		base;
+ 	static qboolean	initialized = false;
  
- typedef struct AsyncStage {
-@@ -123,4 +123,4 @@ struct http_get_struct
- // Main struct array to store the global scores
- extern sorted_remote_map_best_times_record sorted_remote_map_best_times[(MAX_HIGHSCORES*MAX_REMOTE_HOSTS)+MAX_HIGHSCORES];
+@@ -14352,6 +14353,15 @@ int Sys_Milliseconds (void)
+ 	curtime = timeGetTime() - base;
  
--#endif
-\ No newline at end of file
-+#endif
+ 	return curtime;
++*/
++    static LARGE_INTEGER freq = {0}, start = {0};
++    if (freq.QuadPart == 0) {
++        QueryPerformanceFrequency(&freq);
++        QueryPerformanceCounter(&start);
++    }
++    LARGE_INTEGER now;
++    QueryPerformanceCounter(&now);
++    return (int)(((now.QuadPart - start.QuadPart) * 1000) / freq.QuadPart);
+ }
+ #else
+ int Sys_Milliseconds (void)
 diff --git a/jumpmod.h b/jumpmod.h
 index 8743674..04cce14 100644
 --- a/jumpmod.h
@@ -62,13 +70,15 @@ index 8743674..04cce14 100644
  #define HTML_TEMPLATE_POSITION "$template_position$"
  #define HTML_TEMPLATE_MAPBESTTIME "$template_mapbesttime$"
 diff --git a/makefile b/makefile
-index cf7feae..c76c71e 100644
+index cf7feae..35302aa 100644
 --- a/makefile
 +++ b/makefile
-@@ -4,8 +4,8 @@
+@@ -2,10 +2,8 @@
+ 
+ # Compiler flags
  CC = gcc
- # CFLAGS = -Wall -fPIC -Dstricmp=strcasecmp
- # CFLAGS = -Wall -fPIC -Dstricmp=strcasecmp -Wno-unused-result
+-# CFLAGS = -Wall -fPIC -Dstricmp=strcasecmp
+-# CFLAGS = -Wall -fPIC -Dstricmp=strcasecmp -Wno-unused-result
 -CFLAGS = -w -fPIC -Dstricmp=strcasecmp -Wno-unused-result
 -LDFLAGS = -ldl -lm -shared -lcurl
 +CFLAGS = -std=gnu17 -w -fPIC -Dstricmp=strcasecmp -Wno-unused-result -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast
@@ -76,3 +86,214 @@ index cf7feae..c76c71e 100644
  
  # Project files
  GAME_OBJS = \
+diff --git a/makefile.win32 b/makefile.win32
+new file mode 100644
+index 0000000..f1567fd
+--- /dev/null
++++ b/makefile.win32
+@@ -0,0 +1,80 @@
++# Quake2 Jump Makefile
++
++# Complier flags
++CC     = i686-w64-mingw32-gcc
++LD     = i686-w64-mingw32-gcc
++CFLAGS = -std=gnu17 -w -fPIC -Dstricmp=strcasecmp \
++		 -Wno-unused-result \
++		 -Wno-implicit-function-declaration \
++		 -Wno-incompatible-pointer-types \
++		 -Wno-pointer-to-int-cast \
++		 -m32 -march=i686 -mtune=generic
++LDFLAGS = -m32 -shared -static-libgcc -lwinmm -lcurl
++
++# As "/usr/i686-w64-mingw32/bin/curl-config --cflags --static-libs" returns:
++#     -I/usr/i686-w64-mingw32/include
++#     curl was built with static libraries disabled
++# You need to place this .dll files same place where engine is:
++#
++# cp -f /usr/i686-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3,curl-4,gcc_s_dw2-1,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/i686-w64-mingw32/bin/zlib1.dll .
++
++# Project files
++GAME_OBJS = \
++    g_ai.o g_chase.o g_cmds.o g_combat.o g_ctf.o g_func.o g_items.o \
++    g_main.o g_misc.o g_monster.o g_phys.o g_save.o g_spawn.o g_svcmds.o \
++    g_target.o g_trigger.o g_utils.o g_weapon.o m_move.o p_client.o \
++    p_hud.o p_menu.o p_trail.o p_view.o p_weapon.o q_shared.o jumpmod.o \
++    zb_util.o m_insane.o m_infantry.o m_gunner.o m_flipper.o m_berserk.o \
++    m_boss3.o m_mutant.o m_soldier.o g_wireplay.o global.o
++
++# Shared library name
++ARCH = x86
++SHARED_LIB = game$(ARCH).dll
++
++# Debug build settings
++DEBUG_DIR = debug
++DEBUG_SHARED_LIB = $(DEBUG_DIR)/$(SHARED_LIB)
++DEBUG_OBJS = $(addprefix $(DEBUG_DIR)/, $(GAME_OBJS))
++DEBUG_FLAGS = -g -O0 -DDEBUG
++
++# Release build settings
++RELEASE_DIR = release
++RELEASE_SHARED_LIB = $(RELEASE_DIR)/$(SHARED_LIB)
++RELEASE_OBJS = $(addprefix $(RELEASE_DIR)/, $(GAME_OBJS))
++RELEASE_FLAGS = -O3 -DNDEBUG -ffast-math -funroll-loops -fomit-frame-pointer -fexpensive-optimizations -falign-loops=2 -falign-jumps=2 -falign-functions=2
++
++# All available build targets
++.PHONY: all clean debug prep release
++
++# Default build
++all: prep debug release
++
++
++# Debug rules
++debug: $(DEBUG_SHARED_LIB)
++
++$(DEBUG_SHARED_LIB): $(DEBUG_OBJS)
++	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -o $(DEBUG_SHARED_LIB) $^ $(LDFLAGS)
++
++$(DEBUG_DIR)/%.o: %.c
++	$(CC) -c $(CFLAGS) $(DEBUG_FLAGS) -o $@ $<
++
++
++# Release rules
++release: $(RELEASE_SHARED_LIB)
++
++$(RELEASE_SHARED_LIB): $(RELEASE_OBJS)
++	$(CC) $(CFLAGS) $(RELEASE_FLAGS) -o $(RELEASE_SHARED_LIB) $^ $(LDFLAGS)
++
++$(RELEASE_DIR)/%.o: %.c
++	$(CC) -c $(CFLAGS) $(RELEASE_FLAGS) -o $@ $<
++
++
++# Other rules
++prep:
++	@mkdir -p $(DEBUG_DIR) $(RELEASE_DIR)
++
++clean:
++	rm -f $(RELEASE_SHARED_LIB) $(RELEASE_OBJS) $(DEBUG_SHARED_LIB) $(DEBUG_OBJS)
++
++-include $(OBJS:%.o=%.d)
+diff --git a/makefile.win64 b/makefile.win64
+new file mode 100644
+index 0000000..7f2f4e0
+--- /dev/null
++++ b/makefile.win64
+@@ -0,0 +1,79 @@
++# Quake2 Jump Makefile
++
++# Complier flags
++CC     = x86_64-w64-mingw32-gcc
++LD     = x86_64-w64-mingw32-gcc
++CFLAGS = -std=gnu17 -w -fPIC -Dstricmp=strcasecmp \
++		 -Wno-unused-result \
++		 -Wno-implicit-function-declaration \
++		 -Wno-incompatible-pointer-types \
++		 -Wno-pointer-to-int-cast
++LDFLAGS = -shared -static-libgcc -lwinmm -lcurl
++
++# As "/usr/x86_64-w64-mingw32/bin/curl-config --cflags --static-libs" returns:
++#     -I/usr/x86_64-w64-mingw32/include
++#     curl was built with static libraries disabled
++# You need to place this .dll files same place where engine is:
++#
++# cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3-x64,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/x86_64-w64-mingw32/bin/zlib1.dll .
++
++# Project files
++GAME_OBJS = \
++    g_ai.o g_chase.o g_cmds.o g_combat.o g_ctf.o g_func.o g_items.o \
++    g_main.o g_misc.o g_monster.o g_phys.o g_save.o g_spawn.o g_svcmds.o \
++    g_target.o g_trigger.o g_utils.o g_weapon.o m_move.o p_client.o \
++    p_hud.o p_menu.o p_trail.o p_view.o p_weapon.o q_shared.o jumpmod.o \
++    zb_util.o m_insane.o m_infantry.o m_gunner.o m_flipper.o m_berserk.o \
++    m_boss3.o m_mutant.o m_soldier.o g_wireplay.o global.o
++
++# Shared library name
++ARCH = $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
++SHARED_LIB = game$(ARCH).dll
++
++# Debug build settings
++DEBUG_DIR = debug
++DEBUG_SHARED_LIB = $(DEBUG_DIR)/$(SHARED_LIB)
++DEBUG_OBJS = $(addprefix $(DEBUG_DIR)/, $(GAME_OBJS))
++DEBUG_FLAGS = -g -O0 -DDEBUG
++
++# Release build settings
++RELEASE_DIR = release
++RELEASE_SHARED_LIB = $(RELEASE_DIR)/$(SHARED_LIB)
++RELEASE_OBJS = $(addprefix $(RELEASE_DIR)/, $(GAME_OBJS))
++RELEASE_FLAGS = -O3 -DNDEBUG -ffast-math -funroll-loops -fomit-frame-pointer -fexpensive-optimizations -falign-loops=2 -falign-jumps=2 -falign-functions=2
++
++# All available build targets
++.PHONY: all clean debug prep release
++
++# Default build
++all: prep debug release
++
++
++# Debug rules
++debug: $(DEBUG_SHARED_LIB)
++
++$(DEBUG_SHARED_LIB): $(DEBUG_OBJS)
++	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -o $(DEBUG_SHARED_LIB) $^ $(LDFLAGS)
++
++$(DEBUG_DIR)/%.o: %.c
++	$(CC) -c $(CFLAGS) $(DEBUG_FLAGS) -o $@ $<
++
++
++# Release rules
++release: $(RELEASE_SHARED_LIB)
++
++$(RELEASE_SHARED_LIB): $(RELEASE_OBJS)
++	$(CC) $(CFLAGS) $(RELEASE_FLAGS) -o $(RELEASE_SHARED_LIB) $^ $(LDFLAGS)
++
++$(RELEASE_DIR)/%.o: %.c
++	$(CC) -c $(CFLAGS) $(RELEASE_FLAGS) -o $@ $<
++
++
++# Other rules
++prep:
++	@mkdir -p $(DEBUG_DIR) $(RELEASE_DIR)
++
++clean:
++	rm -f $(RELEASE_SHARED_LIB) $(RELEASE_OBJS) $(DEBUG_SHARED_LIB) $(DEBUG_OBJS)
++
++-include $(OBJS:%.o=%.d)
+diff --git a/q_shared.c b/q_shared.c
+index d272e94..15d06d4 100644
+--- a/q_shared.c
++++ b/q_shared.c
+@@ -261,7 +261,9 @@ float Q_fabs (float f)
+ #endif
+ }
+ 
+-#if defined _M_IX86 && !defined C_ONLY
++#if defined(WIN32)
++#define Q_ftol(f) ((int)(f))
++#elif defined _M_IX86 && !defined C_ONLY
+ #pragma warning (disable:4035)
+ __declspec( naked ) long Q_ftol( float f )
+ {
+@@ -345,7 +347,7 @@ BoxOnPlaneSide
+ Returns 1, 2, or 1 + 2
+ ==================
+ */
+-#if !id386 || defined __linux__
++#if !id386 || defined __linux__ || defined WIN32
+ int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
+ {
+ 	float	dist1, dist2;
+diff --git a/q_shared.h b/q_shared.h
+index f424e02..ccb0314 100644
+--- a/q_shared.h
++++ b/q_shared.h
+@@ -30,6 +30,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ #pragma warning(disable : 4018)     // signed/unsigned mismatch
+ #pragma warning(disable : 4305)		// truncation from const double to float
+ 
++#define WIN32_LEAN_AND_MEAN
++#define NOGDI
++#define NOUSER
++#include <windows.h>
++
+ #endif
+ 
+ #include <assert.h>

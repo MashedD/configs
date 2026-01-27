@@ -179,6 +179,35 @@ set freelook "1"
 
 - [3zb2-zigflag](https://github.com/DirtBagXon/3zb2-zigflag) - apply patch `quake2/patches/3zb2-zigflag.diff`. Those are best working bots for any map.
 - [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `quake2/patches/jump.diff`. Additionally you'll need gfx for keys and server config. And some maps.
+
+```bash
+git clone https://github.com/Grish44/q2jump-global-integration
+cd q2jump-global-integration
+wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/jump.diff
+rm -f jump.diff
+
+#
+# Linux 64-bit
+#
+
+make clean all
+
+#
+# Windows 32-bit
+#
+
+make -f makefile.win32 clean all
+# Change dir to where your engine is and then:
+cp -f /usr/i686-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3,curl-4,gcc_s_dw2-1,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/i686-w64-mingw32/bin/zlib1.dll .
+
+#
+# Windows 64-bit
+#
+
+make -f makefile.win64 clean all
+cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3-x64,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/x86_64-w64-mingw32/bin/zlib1.dll .
+```
+
 - [openffa](https://github.com/skullernet/openffa)
 - [opentdm](https://github.com/packetflinger/opentdm) - apply patch `quake2/patches/opentdm.diff`.
 - [openra2](https://github.com/packetflinger/openra2)

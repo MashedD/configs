@@ -190,6 +190,7 @@ rm -f jump.diff
 # Linux 64-bit
 #
 
+# You might need curl4 preset in your system to make gamex86_64.so properly work
 make clean all
 
 #
@@ -197,6 +198,7 @@ make clean all
 #
 
 make -f makefile.win32 clean all
+# Because couldn't build with curl being linked statically:
 # Change dir to where your engine is and then:
 cp -f /usr/i686-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3,curl-4,gcc_s_dw2-1,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/i686-w64-mingw32/bin/zlib1.dll .
 
@@ -205,6 +207,8 @@ cp -f /usr/i686-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3,curl-4,gcc_s
 #
 
 make -f makefile.win64 clean all
+# Because couldn't build with curl being linked statically:
+# Change dir to where your engine is and then:
 cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3-x64,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/x86_64-w64-mingw32/bin/zlib1.dll .
 ```
 

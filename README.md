@@ -8,7 +8,7 @@ Configs for games:
 
 ## Engines
 
-- [q2pro](https://github.com/vloup/q2pro) - Skuller's repo doesn't longer exists, so here's a mirror. [Another Mirror](https://code.nephatrine.net/QuakeArchive/q2pro)
+- [q2pro](https://github.com/vloup/q2pro) - Skuller's repo doesn't longer exists, so here's up-to-date mirror.
 
 Building:
 

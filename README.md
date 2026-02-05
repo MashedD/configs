@@ -23,23 +23,6 @@ sudo pacman -S meson ninja pkgconaf
 git clone https://github.com/vloup/q2pro
 cd q2pro
 
-cat > static-zlib.patch << 'EOF'
-diff --git a/meson.build b/meson.build
-index 72394eac..c6ef83fd 100644
---- a/meson.build
-+++ b/meson.build
-@@ -257,6 +257,7 @@ texture_formats = []
- fallback_opt = ['default_library=static']
-
- zlib = dependency('zlib',
-+  static:          true,
-   fallback:        'zlib-ng',
-   required:        get_option('zlib'),
-   default_options: fallback_opt + [ 'tests=disabled', 'zlib-compat=true', 'force-sse2=true' ],
-EOF
-patch -p1 < static-zlib.patch
-rm -f static-zlib.patch
-
 # Windows 64-bit
 sudo pacman -S \
     mingw-w64-tools \
@@ -50,8 +33,11 @@ sudo pacman -S \
     mingw-w64-winpthreads
 paru -S \
     mingw-w64-zlib \
+    mingw-w64-zlib-ng \
     mingw-w64-ffmpeg \
-    mingw-w64-pkg-config
+    mingw-w64-pkg-config \
+    mingw-w64-libpng \
+    mingw-w64-libjpeg-turbo
 cat > cross-mingw64.txt << 'EOF'
 [binaries]
 c = '/usr/bin/x86_64-w64-mingw32-gcc'
@@ -74,9 +60,7 @@ rm -rf build-win64
 meson setup build-win64 \
     --cross-file cross-mingw64.txt \
     --buildtype=release \
-    -Db_lto=true \
-    -Db_staticpic=true \
-    -Db_pie=false
+    --force-fallback-for=libcurl,zlib,libjpeg,libpng
 meson compile -C build-win64
 
 #
@@ -106,9 +90,7 @@ rm -rf build-win32
 meson setup build-win32 \
   --cross-file cross-mingw32.txt \
   --buildtype=release \
-  -Db_lto=true \
-  -Db_staticpic=true \
-  -Db_pie=false
+  --force-fallback-for=libcurl,zlib,libjpeg,libpng
 meson compile -C build-win32
 
 #
@@ -184,6 +166,7 @@ set freelook "1"
 git clone https://github.com/Grish44/q2jump-global-integration
 cd q2jump-global-integration
 wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/jump.diff
+git apply jump.diff
 rm -f jump.diff
 
 #

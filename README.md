@@ -242,16 +242,13 @@ rm -f opentdm.diff
 make
 
 # Windows 32-bit
-# TODO: ...
 make clean
-$EDITOR Makefile # now replace `-include .config` with `-include .config-win32`
+$EDITOR Makefile # now uncomment `-include .config-win32`
 make
 
 # Windows 64-bit
-cp .config-win32 .config-win64
-# TODO: ...
 make clean
-$EDITOR Makefile # now replace `-include .config` with `-include .config-win64`
+$EDITOR Makefile # now uncomment `-include .config-win64`
 make
 ```
 

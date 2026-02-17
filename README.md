@@ -236,11 +236,13 @@ git clone https://github.com/packetflinger/opentdm
 cd opentdm
 wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/opentdm.diff
 git apply opentdm.diff
+rm -f opentdm.diff
 
 # Linux 64-bit
 make
 
 # Windows 32-bit
+# TODO: ...
 make clean
 $EDITOR Makefile # now replace `-include .config` with `-include .config-win32`
 make
@@ -249,7 +251,7 @@ make
 cp .config-win32 .config-win64
 # TODO: ...
 make clean
-$EDITOR Makefile # now replace `-include .config` with `-include .config-win32`
+$EDITOR Makefile # now replace `-include .config` with `-include .config-win64`
 make
 ```
 

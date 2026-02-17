@@ -229,6 +229,28 @@ cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4
 ```
 
 - [openffa](https://github.com/packetflinger/openffa)
+
+```bash
+git clone https://github.com/packetflinger/openffa
+cd openffa
+wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/openffa.diff
+git apply openffa.diff
+rm -f openffa.diff
+
+# Linux 64-bit
+make
+
+# Windows 32-bit
+make clean
+$EDITOR Makefile # now uncomment `CONFIG_FILE ?= .config-win32` and `-include $(CONFIG_FILE)`
+make
+
+# Windows 64-bit
+make clean
+$EDITOR Makefile # now uncomment `CONFIG_FILE ?= .config-win64` and `-include $(CONFIG_FILE)`
+make
+```
+
 - [opentdm](https://github.com/packetflinger/opentdm)
 
 ```bash

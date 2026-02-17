@@ -1,0 +1,74 @@
+diff --git a/.config-win32 b/.config-win32
+new file mode 100644
+index 0000000..f321618
+--- /dev/null
++++ b/.config-win32
+@@ -0,0 +1,11 @@
++CONFIG_WINDOWS = 1
++CONFIG_32BIT = 1
++
++TARGET = gamex86.dll
++
++CC = i686-w64-mingw32-gcc
++LD = i686-w64-mingw32-gcc
++WINDRES = i686-w64-mingw32-windres
++
++CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D_WIN32 -D__USE_W32_SOCKETS
++LIBS = -L/usr/i686-w64-mingw32/lib -lcurl -lnghttp2 -lidn2 -lssh2 -lpsl -lbcrypt -ladvapi32 -lcrypt32 -lssl -lcrypto -lwldap32 -lzstd -lbrotlidec -lz -lws2_32
+diff --git a/.config-win64 b/.config-win64
+new file mode 100644
+index 0000000..5641536
+--- /dev/null
++++ b/.config-win64
+@@ -0,0 +1,11 @@
++CONFIG_WINDOWS = 1
++
++TARGET = gamex86_64.dll
++
++CC = x86_64-w64-mingw32-gcc
++LD = x86_64-w64-mingw32-gcc
++WINDRES = x86_64-w64-mingw32-windres
++
++CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D_WIN32 -D__USE_W32_SOCKETS
++LIBS = -L/usr/x86_64-w64-mingw32/lib -lcurl -lnghttp2 -lidn2 -lssh2
++
+diff --git a/.gitignore b/.gitignore
+index 6f98af9..21fdd13 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,4 +1,3 @@
+-/.config*
+ /*.d
+ /*.o
+ /game*.so
+diff --git a/Makefile b/Makefile
+index 03aba4b..c8422de 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,8 @@
+ ### OpenFFA Makefile ###
+ 
+-CONFIG_FILE ?= .config
+-
+--include $(CONFIG_FILE)
++#CONFIG_FILE ?= .config-win32
++#CONFIG_FILE ?= .config-win64
++#-include $(CONFIG_FILE)
+ 
+ ifndef CPU
+     CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
+@@ -73,6 +73,14 @@ ifdef CONFIG_UDP
+     OBJS += g_udp.o
+ endif
+ 
++ifdef CONFIG_32BIT
++	CFLAGS += -m32
++	LDFLAGS += -m32
++	CPU = x86
++else
++	CPU = x86_64
++endif
++
+ ifdef CONFIG_WINDOWS
+     OBJS += openffa.o
+     LIBS += -lws2_32

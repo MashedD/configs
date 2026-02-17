@@ -25,3 +25,269 @@ index 75f33e7..da2d393 100644
  
  	//load info
  	//sprintf(Buff,"%s/3ZBConfig.cfg",gamepath->string);
+diff --git a/src/g_cmds.c b/src/g_cmds.c
+index dd5bfb1..0773896 100644
+--- a/src/g_cmds.c
++++ b/src/g_cmds.c
+@@ -437,7 +437,7 @@ void Cmd_Use_f (edict_t *ent)
+ 				return;
+ 			}
+ 		}
+-		else 
++		else
+ 		{
+ 			gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+ 			return;
+@@ -505,7 +505,7 @@ void Cmd_Drop_f (edict_t *ent)
+ 				return;
+ 			}
+ 		}
+-		else 
++		else
+ 		{
+ 			gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+ 			return;
+@@ -985,7 +985,7 @@ void Cmd_ZoomIn(edict_t *ent)
+ 		ent->client->zc.distance = 90;
+ 		ent->client->ps.fov = 90;
+ 	}
+-	
++
+ 	if(ent->client->zc.distance > 15)
+ 	{
+ 		gi.sound (ent, CHAN_AUTO, gi.soundindex("3zb/zoom.wav"), 1, ATTN_NORM, 0);
+@@ -1005,20 +1005,20 @@ void Cmd_ZoomOut(edict_t *ent)
+ 
+ //	if(	ent->client->pers.weapon != FindItem("Railgun")) return;
+ 
+-	if(ent->client->zc.aiming != 1 && ent->client->zc.aiming != 3) return;	
++	if(ent->client->zc.aiming != 1 && ent->client->zc.aiming != 3) return;
+ 
+ 	if(ent->client->zc.distance < 15 || ent->client->zc.distance > 90)
+ 	{
+ 		ent->client->zc.distance = 90;
+ 		ent->client->ps.fov = 90;
+ 	}
+-	
++
+ 	if(ent->client->zc.distance < 90)
+ 	{
+ 		gi.sound (ent, CHAN_AUTO, gi.soundindex("3zb/zoom.wav"), 1, ATTN_NORM, 0);
+ 		if(ent->client->zc.distance == 15 ) ent->client->zc.distance = 40;
+ 		else if(ent->client->zc.distance == 40 ) ent->client->zc.distance = 65;
+-		else ent->client->zc.distance = 90;		
++		else ent->client->zc.distance = 90;
+ 		ent->client->ps.fov = ent->client->zc.distance;
+ 	}
+ }
+@@ -1055,7 +1055,7 @@ void UndoChain(edict_t *ent ,int step)
+ 				rs_trace = gi.trace(Route[i].Pt,ent->mins,ent->maxs,Route[i].Pt,ent,MASK_BOTSOLID);
+ 
+ 				if(--count <= 0 && !rs_trace.allsolid && !rs_trace.startsolid) break;
+-			}  
++			}
+ 		}
+ 
+ 		gi.cprintf(ent,PRINT_HIGH,"backed %i %i steps.\n",CurrentIndex - i,step);
+@@ -1064,7 +1064,7 @@ void UndoChain(edict_t *ent ,int step)
+ 		VectorCopy(Route[CurrentIndex].Pt,ent->s.old_origin);
+ 
+ 		memset(&Route[CurrentIndex],0,sizeof(route_t));
+-		if(CurrentIndex > 0) Route[CurrentIndex].index = Route[CurrentIndex - 1].index + 1; 
++		if(CurrentIndex > 0) Route[CurrentIndex].index = Route[CurrentIndex - 1].index + 1;
+ 	}
+ }
+ 
+@@ -1108,6 +1108,17 @@ void ClientCommand (edict_t *ent)
+ 		return;
+ 	}
+ 
++    if (Q_stricmp (cmd, "store") == 0)
++    {
++        Cmd_Store_f(ent);
++        return;
++    }
++    if (Q_stricmp (cmd, "recall") == 0)
++    {
++        Cmd_Recall_f(ent);
++        return;
++    }
++
+ 	if (level.intermissiontime)
+ 		return;
+ 
+@@ -1177,3 +1188,50 @@ void ClientCommand (edict_t *ent)
+ 	else	// anything that doesn't match a command will be a chat
+ 		Cmd_Say_f (ent, false, true);
+ }
++
++void Cmd_Store_f (edict_t *ent)
++{
++    if (!ent->client)
++        return;
++
++    if (!sv_cheats->value) {
++        gi.cprintf(ent, PRINT_HIGH, "Not allowed\n");
++        return;
++    }
++
++    VectorCopy(ent->s.origin, ent->client->pers.stored_origin);
++    VectorCopy(ent->client->ps.viewangles, ent->client->pers.stored_angles);
++    ent->client->pers.stored_frame = level.framenum;
++
++    gi.cprintf(ent, PRINT_HIGH, "Position stored.\n");
++}
++
++void Cmd_Recall_f (edict_t *ent)
++{
++    if (!ent->client)
++        return;
++
++    if (ent->client->pers.stored_frame == 0)
++    {
++        gi.cprintf(ent, PRINT_HIGH, "No valid position stored.\n");
++        return;
++    }
++
++    VectorCopy(ent->client->pers.stored_origin, ent->s.origin);
++    VectorCopy(ent->client->pers.stored_origin, ent->s.old_origin);
++    VectorCopy(ent->client->pers.stored_origin, ent->client->ps.pmove.origin);
++
++    VectorCopy(ent->client->pers.stored_angles, ent->client->ps.viewangles);
++    VectorCopy(ent->client->pers.stored_angles, ent->client->v_angle);
++    VectorCopy(ent->client->pers.stored_angles, ent->s.angles);
++
++	for (int i=0 ; i<3 ; i++)
++		ent->client->ps.pmove.delta_angles[i] = ANGLE2SHORT(ent->client->v_angle[i] - ent->client->resp.cmd_angles[i]);
++
++    VectorCopy(vec3_origin, ent->velocity);
++    VectorCopy(vec3_origin, ent->client->ps.pmove.velocity);
++
++    gi.linkentity(ent);
++
++    gi.cprintf(ent, PRINT_HIGH, "Position recalled.\n");
++}
+diff --git a/src/header/local.h b/src/header/local.h
+index 796ea90..bfb9681 100644
+--- a/src/header/local.h
++++ b/src/header/local.h
+@@ -107,9 +107,9 @@ typedef enum
+ 	DAMAGE_AIM			// auto targeting recognizes this
+ } damage_t;
+ 
+-typedef enum 
++typedef enum
+ {
+-	WEAPON_READY, 
++	WEAPON_READY,
+ 	WEAPON_ACTIVATING,
+ 	WEAPON_DROPPING,
+ 	WEAPON_FIRING
+@@ -253,15 +253,15 @@ typedef struct
+ //ZOID
+ 
+ // gitem_t->weapmodel for weapons indicates model index
+-#define WEAP_BLASTER			1 
+-#define WEAP_SHOTGUN			2 
+-#define WEAP_SUPERSHOTGUN		3 
+-#define WEAP_MACHINEGUN			4 
+-#define WEAP_CHAINGUN			5 
+-#define WEAP_GRENADES			6 
+-#define WEAP_GRENADELAUNCHER	7 
+-#define WEAP_ROCKETLAUNCHER		8 
+-#define WEAP_HYPERBLASTER		9 
++#define WEAP_BLASTER			1
++#define WEAP_SHOTGUN			2
++#define WEAP_SUPERSHOTGUN		3
++#define WEAP_MACHINEGUN			4
++#define WEAP_CHAINGUN			5
++#define WEAP_GRENADES			6
++#define WEAP_GRENADELAUNCHER	7
++#define WEAP_ROCKETLAUNCHER		8
++#define WEAP_HYPERBLASTER		9
+ #define WEAP_RAILGUN			10
+ #define WEAP_BFG				11
+ #define WEAP_PHALANX			12
+@@ -664,7 +664,7 @@ extern	qboolean	is_quad;
+ #define FFL_NOSPAWN			2
+ 
+ typedef enum {
+-	F_INT, 
++	F_INT,
+ 	F_FLOAT,
+ 	F_LSTRING,			// string on disk, pointer in memory, TAG_LEVEL
+ 	F_GSTRING,			// string on disk, pointer in memory, TAG_GAME
+@@ -697,6 +697,9 @@ extern	gitem_t	itemlist[];
+ void Cmd_Help_f (edict_t *ent);
+ void Cmd_Score_f (edict_t *ent);
+ 
++void Cmd_Store_f (edict_t *ent);
++void Cmd_Recall_f (edict_t *ent);
++
+ //
+ // g_items.c
+ //
+@@ -988,6 +991,10 @@ typedef struct
+ 
+ 	qboolean	joined;				// client has joined the game
+ 	qboolean	spectator;			// client is a spectator
++
++    vec3_t  stored_origin;
++    vec3_t  stored_angles;
++    int     stored_frame;
+ } client_persistant_t;
+ 
+ /*
+@@ -998,14 +1005,14 @@ typedef struct zgcl_s
+ {
+ 	int			zclass;			//class no.
+ 
+-// true client用 zoom フラグ	
++// true client用 zoom フラグ
+ 	int			aiming;			//0-not 1-aiming  2-firing zoomingflag
+ 	float		distance;		//zoom中のFOV値
+ 	float		olddistance;	//旧zooming FOV値
+ 	qboolean	autozoom;		//autozoom
+ 	qboolean	lockon;			//lockon flag false-not true-locking
+ 
+-// bot用	
++// bot用
+ 	int			zcstate;		//status
+ 
+ 	int			botskill;		//skill
+@@ -1024,7 +1031,7 @@ typedef struct zgcl_s
+ 	float		moveyaw;		//true moving yaw
+ 
+ 	//camp & aiming
+-	float		preaimingtime;	
++	float		preaimingtime;
+ 	float		campingtime;
+ 
+ 	//combat
+@@ -1147,7 +1154,7 @@ struct gclient_s
+ 	float		quadfire_framenum;
+ 	qboolean	trap_blew_up;
+ 	float		trap_time;
+-	
++
+ 	int			silencer_shots;
+ 	int			weapon_sound;
+ 
+@@ -1183,7 +1190,7 @@ struct edict_s
+ 
+ 	// FIXME: move these fields to a server private sv_entity_t
+ 	link_t		area;				// linked to a division node or leaf
+-	
++
+ 	int			num_clusters;		// if -1, use headnode instead
+ 	int			clusternums[MAX_ENT_CLUSTERS];
+ 	int			headnode;			// unused if num_clusters != -1
+@@ -1208,7 +1215,7 @@ struct edict_s
+ 
+ 	char		*model;
+ 	float		freetime;			// sv.time when the object was freed
+-	
++
+ 	//
+ 	// only used locally in game, not by server
+ 	//

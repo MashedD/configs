@@ -37,7 +37,8 @@ paru -S \
     mingw-w64-ffmpeg \
     mingw-w64-pkg-config \
     mingw-w64-libpng \
-    mingw-w64-libjpeg-turbo
+    mingw-w64-libjpeg-turbo \
+    mingw-w64-openal
 cat > cross-mingw64.txt << 'EOF'
 [binaries]
 c = '/usr/bin/x86_64-w64-mingw32-gcc'
@@ -159,7 +160,39 @@ set freelook "1"
 
 ## Mods
 
-- [3zb2-zigflag](https://github.com/DirtBagXon/3zb2-zigflag) - apply patch `quake2/patches/3zb2-zigflag.diff`. Those are best working bots for any map.
+- [3zb2-zigflag](https://github.com/DirtBagXon/3zb2-zigflag) - apply patch `quake2/patches/3zb2-zigflag.diff`. Those are best working bots for any map. Added "store" and "recall" commands, similar as in Jump mod.
+
+```bash
+git clone https://github.com/DirtBagXon/3zb2-zigflag
+cd 3zb2-zigflag
+wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/3zb2-zigflag.diff
+git apply 3zb2-zigflag.diff
+rm -f 3zb2-zigflag.diff
+
+# Linux
+make
+
+# Win64
+make clean
+make CC=x86_64-w64-mingw32-gcc \
+     CXX=x86_64-w64-mingw32-g++ \
+     LD=x86_64-w64-mingw32-gcc \
+     AR=x86_64-w64-mingw32-ar \
+     RANLIB=x86_64-w64-mingw32-ranlib \
+     STRIP=x86_64-w64-mingw32-strip \
+     OSTYPE=Windows_NT && mv release/game.so release/gamex86_64.dll
+
+# Win32
+make clean
+make CC=i686-w64-mingw32-gcc \
+     CXX=i686-w64-mingw32-g++ \
+     LD=i686-w64-mingw32-gcc \
+     AR=i686-w64-mingw32-ar \
+     RANLIB=i686-w64-mingw32-ranlib \
+     STRIP=i686-w64-mingw32-strip \
+     OSTYPE=Windows_NT && mv release/game.so release/gamex86.dll
+```
+
 - [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `quake2/patches/jump.diff`. Additionally you'll need gfx for keys and server config. And some maps.
 
 ```bash
@@ -196,7 +229,30 @@ cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4
 ```
 
 - [openffa](https://github.com/packetflinger/openffa)
-- [opentdm](https://github.com/packetflinger/opentdm) - apply patch `quake2/patches/opentdm.diff`.
+- [opentdm](https://github.com/packetflinger/opentdm)
+
+```bash
+git clone https://github.com/packetflinger/opentdm
+cd opentdm
+wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/opentdm.diff
+git apply opentdm.diff
+
+# Linux 64-bit
+make
+
+# Windows 32-bit
+make clean
+$EDITOR Makefile # now replace `-include .config` with `-include .config-win32`
+make
+
+# Windows 64-bit
+cp .config-win32 .config-win64
+# TODO: ...
+make clean
+$EDITOR Makefile # now replace `-include .config` with `-include .config-win32`
+make
+```
+
 - [openra2](https://github.com/packetflinger/openra2)
 - [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `quake2/patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `quake2/patches/DDaynormandyFPS-src-dday.diff`, `quake2/patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures)
 - [Chaos](https://github.com/aginies/quake2)

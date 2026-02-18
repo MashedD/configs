@@ -265,17 +265,15 @@ make
 
 # Windows 32-bit
 make clean
-$EDITOR Makefile # now uncomment `-include .config-win32`
-make
+make CONFIG_FILE=.config-win64
 
 # Windows 64-bit
 make clean
-$EDITOR Makefile # now uncomment `-include .config-win64`
-make
+make CONFIG_FILE=.config-win64
 ```
 
 - [openra2](https://github.com/packetflinger/openra2)
-- [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `quake2/patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `quake2/patches/DDaynormandyFPS-src-dday.diff`, `quake2/patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures)
+- [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `quake2/patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `quake2/patches/DDaynormandyFPS-src-dday.diff`, `quake2/patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures). [Active Community](https://dday.cl/)
 - [Chaos](https://github.com/aginies/quake2)
 
 ## Paks

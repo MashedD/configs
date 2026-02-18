@@ -6,7 +6,7 @@ index 5a4a692..0000000
 @@ -1 +0,0 @@
 -CONFIG_HTTP=1
 diff --git a/.config-win32 b/.config-win32
-index f3ab5dc..f321618 100644
+index f3ab5dc..b559077 100644
 --- a/.config-win32
 +++ b/.config-win32
 @@ -1,27 +1,11 @@
@@ -40,11 +40,11 @@ index f3ab5dc..f321618 100644
 -CURL_LIBS += /usr/i686-w64-mingw32/sys-root/mingw/lib/libcrypto.a
 -CURL_LIBS += /usr/i686-w64-mingw32/sys-root/mingw/lib/libcrypt32.a
 -CURL_LIBS += -static -static-libgcc
-+CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D_WIN32 -D__USE_W32_SOCKETS
-+LIBS = -L/usr/i686-w64-mingw32/lib -lcurl -lnghttp2 -lidn2 -lssh2 -lpsl -lbcrypt -ladvapi32 -lcrypt32 -lssl -lcrypto -lwldap32 -lzstd -lbrotlidec -lz -lws2_32
++CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D__USE_W32_SOCKETS
++LIBS = -L/usr/i686-w64-mingw32/lib -lcurl
 diff --git a/.config-win64 b/.config-win64
 new file mode 100644
-index 0000000..85efa48
+index 0000000..d7456ad
 --- /dev/null
 +++ b/.config-win64
 @@ -0,0 +1,11 @@
@@ -56,23 +56,38 @@ index 0000000..85efa48
 +LD = x86_64-w64-mingw32-gcc
 +WINDRES = x86_64-w64-mingw32-windres
 +
-+CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D_WIN32 -D__USE_W32_SOCKETS
-+LIBS = -L/usr/x86_64-w64-mingw32/lib -lcurl -lnghttp2 -lidn2 -lssh2 # -lpsl -lbcrypt -ladvapi32 -lcrypt32 -lssl -lcrypto -lwldap32 -lzstd -lbrotlidec -lz -lws2_32
++CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D__USE_W32_SOCKETS
++LIBS = -L/usr/x86_64-w64-mingw32/lib -lcurl
 +
 diff --git a/Makefile b/Makefile
-index 4d556fd..5540226 100644
+index 4d556fd..ca729b5 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1,6 +1,7 @@
- ### OpenTDM Makefile ###
- 
+@@ -1,17 +1,17 @@
+-### OpenTDM Makefile ###
+-
 --include .config
-+#-include .config-win32
-+#-include .config-win64
++ifdef CONFIG_FILE
++	-include $(CONFIG_FILE)
++endif
  
  ifndef CPU
-     CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
-@@ -19,37 +20,11 @@ WINDRES ?= windres
+-    CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
++	CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
+ endif
+ 
+ ifndef REV
+-    REV := $(shell git rev-list HEAD | wc -l | tr -d " ")
++	REV := $(shell git rev-list HEAD | wc -l | tr -d " ")
+ endif
+ 
+ ifndef VER
+-    VER := r$(REV)~$(shell git rev-parse --short HEAD)
++	VER := r$(REV)~$(shell git rev-parse --short HEAD)
+ endif
+ 
+ CC ?= gcc
+@@ -19,37 +19,11 @@ WINDRES ?= windres
  STRIP ?= strip
  RM ?= rm -f
  
@@ -112,7 +127,7 @@ index 4d556fd..5540226 100644
      CFLAGS += -fPIC -fvisibility=hidden
      CURL_CFLAGS ?= -Ideps/$(CPU)/curl/include
      CFLAGS += -DHAVE_CURL $(CURL_CFLAGS) -DCURL_STATICLIB \
-@@ -65,31 +40,29 @@ CFLAGS += -DC_ONLY
+@@ -65,31 +39,29 @@ CFLAGS += -DC_ONLY
  CFLAGS += -DOPENTDM_VERSION='"$(VER)"' -DOPENTDM_REVISION=$(REV)
  RCFLAGS += -DOPENTDM_VERSION='\"$(VER)\"' -DOPENTDM_REVISION=$(REV)
  
@@ -144,7 +159,7 @@ index 4d556fd..5540226 100644
 +else
 +	CPU = x86_64
 +endif
-+ 
++
 +ifdef CONFIG_WINDOWS
 +	OBJS += sys_win32.o
 +	OBJS += opentdm.o

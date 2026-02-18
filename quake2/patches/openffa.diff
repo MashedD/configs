@@ -1,9 +1,9 @@
 diff --git a/.config-win32 b/.config-win32
 new file mode 100644
-index 0000000..f321618
+index 0000000..d611de0
 --- /dev/null
 +++ b/.config-win32
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,38 @@
 +CONFIG_WINDOWS = 1
 +CONFIG_32BIT = 1
 +
@@ -13,14 +13,41 @@ index 0000000..f321618
 +LD = i686-w64-mingw32-gcc
 +WINDRES = i686-w64-mingw32-windres
 +
-+CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D_WIN32 -D__USE_W32_SOCKETS
-+LIBS = -L/usr/i686-w64-mingw32/lib -lcurl -lnghttp2 -lidn2 -lssh2 -lpsl -lbcrypt -ladvapi32 -lcrypt32 -lssl -lcrypto -lwldap32 -lzstd -lbrotlidec -lz -lws2_32
++CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D__USE_W32_SOCKETS
++LDFLAGS = -shared -static -static-libgcc
++
++LIBS = -L/usr/i686-w64-mingw32/lib
++
++# curl and its deps (only ones we know exist)
++LIBS += /usr/i686-w64-mingw32/lib/libcurl.a
++LIBS += /usr/i686-w64-mingw32/lib/libnghttp2.a
++LIBS += /usr/i686-w64-mingw32/lib/libpsl.a
++LIBS += /usr/i686-w64-mingw32/lib/libidn2.a
++LIBS += /usr/i686-w64-mingw32/lib/libbrotlidec.a
++LIBS += /usr/i686-w64-mingw32/lib/libbrotlicommon.a
++LIBS += /usr/i686-w64-mingw32/lib/libzstd.dll.a
++LIBS += /usr/i686-w64-mingw32/lib/libunistring.a
++
++# ssh2 (needs zlib)
++LIBS += /usr/i686-w64-mingw32/lib/libssh2.a
++LIBS += /usr/i686-w64-mingw32/lib/libz.a
++
++# OpenSSL (ssl first, then crypto)
++LIBS += /usr/i686-w64-mingw32/lib/libssl.a
++LIBS += /usr/i686-w64-mingw32/lib/libcrypto.a
++
++# windows / misc helpers
++LIBS += /usr/i686-w64-mingw32/lib/libcrypt32.a
++LIBS += /usr/i686-w64-mingw32/lib/libwldap32.a
++LIBS += /usr/i686-w64-mingw32/lib/libiconv.a
++LIBS += /usr/i686-w64-mingw32/lib/libbcrypt.a
++ 
 diff --git a/.config-win64 b/.config-win64
 new file mode 100644
-index 0000000..5641536
+index 0000000..73973a9
 --- /dev/null
 +++ b/.config-win64
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,37 @@
 +CONFIG_WINDOWS = 1
 +
 +TARGET = gamex86_64.dll
@@ -29,8 +56,34 @@ index 0000000..5641536
 +LD = x86_64-w64-mingw32-gcc
 +WINDRES = x86_64-w64-mingw32-windres
 +
-+CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D_WIN32 -D__USE_W32_SOCKETS
-+LIBS = -L/usr/x86_64-w64-mingw32/lib -lcurl -lnghttp2 -lidn2 -lssh2
++CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D__USE_W32_SOCKETS
++LDFLAGS = -shared -static -static-libgcc
++
++LIBS = -L/usr/x86_64-w64-mingw32/lib
++
++# curl and its deps (only ones we know exist)
++LIBS += /usr/x86_64-w64-mingw32/lib/libcurl.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libnghttp2.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libpsl.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libidn2.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libbrotlidec.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libbrotlicommon.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libzstd.dll.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libunistring.a
++
++# ssh2 (needs zlib)
++LIBS += /usr/x86_64-w64-mingw32/lib/libssh2.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libz.a
++
++# OpenSSL (ssl first, then crypto)
++LIBS += /usr/x86_64-w64-mingw32/lib/libssl.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libcrypto.a
++
++# windows / misc helpers
++LIBS += /usr/x86_64-w64-mingw32/lib/libcrypt32.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libwldap32.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libiconv.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libbcrypt.a
 +
 diff --git a/.gitignore b/.gitignore
 index 6f98af9..21fdd13 100644
@@ -42,22 +95,36 @@ index 6f98af9..21fdd13 100644
  /*.o
  /game*.so
 diff --git a/Makefile b/Makefile
-index 03aba4b..c8422de 100644
+index 03aba4b..ff2bbf1 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1,8 +1,8 @@
- ### OpenFFA Makefile ###
- 
+@@ -1,19 +1,17 @@
+-### OpenFFA Makefile ###
+-
 -CONFIG_FILE ?= .config
 -
 --include $(CONFIG_FILE)
-+#CONFIG_FILE ?= .config-win32
-+#CONFIG_FILE ?= .config-win64
-+#-include $(CONFIG_FILE)
++ifdef CONFIG_FILE
++	-include $(CONFIG_FILE)
++endif
  
  ifndef CPU
-     CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
-@@ -73,6 +73,14 @@ ifdef CONFIG_UDP
+-    CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
++	CPU := $(shell uname -m | sed -e s/i.86/i386/ -e s/amd64/x86_64/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/ -e s/alpha/axp/)
+ endif
+ 
+ ifndef REV
+-    REV := $(shell git rev-list --count HEAD)
++	REV := $(shell git rev-list --count HEAD)
+ endif
+ 
+ ifndef VER
+-    VER := r$(REV)~$(shell git rev-parse --short HEAD)
++	VER := r$(REV)~$(shell git rev-parse --short HEAD)
+ endif
+ 
+ CC ?= gcc
+@@ -73,6 +71,14 @@ ifdef CONFIG_UDP
      OBJS += g_udp.o
  endif
  

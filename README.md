@@ -38,7 +38,8 @@ paru -S \
     mingw-w64-pkg-config \
     mingw-w64-libpng \
     mingw-w64-libjpeg-turbo \
-    mingw-w64-openal
+    mingw-w64-openal \
+    mingw-w64-zstd
 cat > cross-mingw64.txt << 'EOF'
 [binaries]
 c = '/usr/bin/x86_64-w64-mingw32-gcc'
@@ -241,14 +242,10 @@ rm -f openffa.diff
 make
 
 # Windows 32-bit
-make clean
-$EDITOR Makefile # now uncomment `CONFIG_FILE ?= .config-win32` and `-include $(CONFIG_FILE)`
-make
+make CONFIG_FILE=.config-win32 clean all
 
 # Windows 64-bit
-make clean
-$EDITOR Makefile # now uncomment `CONFIG_FILE ?= .config-win64` and `-include $(CONFIG_FILE)`
-make
+make CONFIG_FILE=.config-win64 clean all
 ```
 
 - [opentdm](https://github.com/packetflinger/opentdm)
@@ -264,12 +261,10 @@ rm -f opentdm.diff
 make
 
 # Windows 32-bit
-make clean
-make CONFIG_FILE=.config-win64
+make CONFIG_FILE=.config-win32 clean all
 
 # Windows 64-bit
-make clean
-make CONFIG_FILE=.config-win64
+make CONFIG_FILE=.config-win64 clean all
 ```
 
 - [openra2](https://github.com/packetflinger/openra2)

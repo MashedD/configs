@@ -6,10 +6,10 @@ index 5a4a692..0000000
 @@ -1 +0,0 @@
 -CONFIG_HTTP=1
 diff --git a/.config-win32 b/.config-win32
-index f3ab5dc..b559077 100644
+index f3ab5dc..5f21ddd 100644
 --- a/.config-win32
 +++ b/.config-win32
-@@ -1,27 +1,11 @@
+@@ -1,27 +1,38 @@
 -# build with libcurl - enable things like voting webconfigs
 -CONFIG_HTTP = 1
 +CONFIG_WINDOWS = 1
@@ -41,13 +41,40 @@ index f3ab5dc..b559077 100644
 -CURL_LIBS += /usr/i686-w64-mingw32/sys-root/mingw/lib/libcrypt32.a
 -CURL_LIBS += -static -static-libgcc
 +CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D__USE_W32_SOCKETS
-+LIBS = -L/usr/i686-w64-mingw32/lib -lcurl
++LDFLAGS = -shared -static -static-libgcc
++
++LIBS = -L/usr/i686-w64-mingw32/lib
++
++# curl and its deps (only ones we know exist)
++LIBS += /usr/i686-w64-mingw32/lib/libcurl.a
++LIBS += /usr/i686-w64-mingw32/lib/libnghttp2.a
++LIBS += /usr/i686-w64-mingw32/lib/libpsl.a
++LIBS += /usr/i686-w64-mingw32/lib/libidn2.a
++LIBS += /usr/i686-w64-mingw32/lib/libbrotlidec.a
++LIBS += /usr/i686-w64-mingw32/lib/libbrotlicommon.a
++LIBS += /usr/i686-w64-mingw32/lib/libzstd.dll.a
++LIBS += /usr/i686-w64-mingw32/lib/libunistring.a
++
++# ssh2 (needs zlib)
++LIBS += /usr/i686-w64-mingw32/lib/libssh2.a
++LIBS += /usr/i686-w64-mingw32/lib/libz.a
++
++# OpenSSL (ssl first, then crypto)
++LIBS += /usr/i686-w64-mingw32/lib/libssl.a
++LIBS += /usr/i686-w64-mingw32/lib/libcrypto.a
++
++# windows / misc helpers
++LIBS += /usr/i686-w64-mingw32/lib/libcrypt32.a
++LIBS += /usr/i686-w64-mingw32/lib/libwldap32.a
++LIBS += /usr/i686-w64-mingw32/lib/libiconv.a
++LIBS += /usr/i686-w64-mingw32/lib/libbcrypt.a
++
 diff --git a/.config-win64 b/.config-win64
 new file mode 100644
-index 0000000..d7456ad
+index 0000000..3f5111a
 --- /dev/null
 +++ b/.config-win64
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,37 @@
 +CONFIG_WINDOWS = 1
 +
 +TARGET = gamex86_64.dll
@@ -57,8 +84,34 @@ index 0000000..d7456ad
 +WINDRES = x86_64-w64-mingw32-windres
 +
 +CFLAGS = -std=gnu99 -static -static-libgcc -DCURL_STATICLIB -DHAVE_CURL -DWIN32 -D__USE_W32_SOCKETS
-+LIBS = -L/usr/x86_64-w64-mingw32/lib -lcurl
++LDFLAGS = -shared -static -static-libgcc
 +
++LIBS = -L/usr/x86_64-w64-mingw32/lib
++
++# curl and its deps (only ones we know exist)
++LIBS += /usr/x86_64-w64-mingw32/lib/libcurl.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libnghttp2.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libpsl.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libidn2.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libbrotlidec.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libbrotlicommon.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libzstd.dll.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libunistring.a
++
++# ssh2 (needs zlib)
++LIBS += /usr/x86_64-w64-mingw32/lib/libssh2.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libz.a
++
++# OpenSSL (ssl first, then crypto)
++LIBS += /usr/x86_64-w64-mingw32/lib/libssl.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libcrypto.a
++
++# windows / misc helpers
++LIBS += /usr/x86_64-w64-mingw32/lib/libcrypt32.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libwldap32.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libiconv.a
++LIBS += /usr/x86_64-w64-mingw32/lib/libbcrypt.a
++ 
 diff --git a/Makefile b/Makefile
 index 4d556fd..ca729b5 100644
 --- a/Makefile

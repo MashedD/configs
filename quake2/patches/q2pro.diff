@@ -1,6 +1,6 @@
 diff --git a/build-win32.sh b/build-win32.sh
 new file mode 100755
-index 00000000..2a582ec3
+index 00000000..6994c47b
 --- /dev/null
 +++ b/build-win32.sh
 @@ -0,0 +1,19 @@
@@ -18,14 +18,14 @@ index 00000000..2a582ec3
 +
 +meson compile -C build-win32
 +
-+#cp -f build-win32/q2pro.exe /home/user/Data/Games/q2pro/q2pro32.exe
-+#cp -f build-win32/q2proded.exe /home/user/Data/Games/q2pro/q2proded32.exe
-+#cd "/home/user/Data/Games/q2pro"
++#cp -f build-win32/q2pro.exe $HOME/Data/Games/q2pro/q2pro32.exe
++#cp -f build-win32/q2proded.exe $HOME/user/Data/Games/q2pro/q2proded32.exe
++#cd "$HOME/user/Data/Games/q2pro"
 +#./start-q2pro-win32-mashedd.sh
 +
 diff --git a/build-win64.sh b/build-win64.sh
 new file mode 100755
-index 00000000..b5033768
+index 00000000..11f5b09c
 --- /dev/null
 +++ b/build-win64.sh
 @@ -0,0 +1,19 @@
@@ -43,9 +43,9 @@ index 00000000..b5033768
 +
 +meson compile -C build-win64 -j$(nproc --all || echo 4)
 +
-+#cp -f build-win64/q2pro.exe /home/user/Data/Games/q2pro/
-+#cp -f build-win64/q2proded.exe /home/user/Data/Games/q2pro/
-+#cd "/home/user/Data/Games/q2pro"
++#cp -f build-win64/q2pro.exe $HOME/Data/Games/q2pro/
++#cp -f build-win64/q2proded.exe $HOME/Data/Games/q2pro/
++#cd "$HOME/Data/Games/q2pro"
 +#./start-q2pro-win64-mashedd.sh
 +
 diff --git a/cross-mingw32.txt b/cross-mingw32.txt
@@ -95,6 +95,19 @@ index 00000000..f6ccc347
 +[properties]
 +needs_exe_wrapper = true
 +
+diff --git a/meson_options.txt b/meson_options.txt
+index f964e001..53ebdf55 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -51,7 +51,7 @@ option('game-new-api',
+ 
+ option('homedir',
+   type: 'string',
+-  value: '~/.q2pro',
++  value: '.',
+   description: 'Default value for "homedir" console variable')
+ 
+ option('icmp-errors',
 diff --git a/src/client/sound/al.c b/src/client/sound/al.c
 index 9343d085..2fea268c 100644
 --- a/src/client/sound/al.c

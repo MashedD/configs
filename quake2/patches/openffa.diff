@@ -1,6 +1,6 @@
 diff --git a/.config-win32 b/.config-win32
 new file mode 100644
-index 0000000..d611de0
+index 0000000..e0e7b24
 --- /dev/null
 +++ b/.config-win32
 @@ -0,0 +1,38 @@
@@ -25,7 +25,7 @@ index 0000000..d611de0
 +LIBS += /usr/i686-w64-mingw32/lib/libidn2.a
 +LIBS += /usr/i686-w64-mingw32/lib/libbrotlidec.a
 +LIBS += /usr/i686-w64-mingw32/lib/libbrotlicommon.a
-+LIBS += /usr/i686-w64-mingw32/lib/libzstd.dll.a
++#LIBS += /usr/i686-w64-mingw32/lib/libzstd.dll.a
 +LIBS += /usr/i686-w64-mingw32/lib/libunistring.a
 +
 +# ssh2 (needs zlib)
@@ -44,7 +44,7 @@ index 0000000..d611de0
 + 
 diff --git a/.config-win64 b/.config-win64
 new file mode 100644
-index 0000000..73973a9
+index 0000000..c77896b
 --- /dev/null
 +++ b/.config-win64
 @@ -0,0 +1,37 @@
@@ -68,7 +68,7 @@ index 0000000..73973a9
 +LIBS += /usr/x86_64-w64-mingw32/lib/libidn2.a
 +LIBS += /usr/x86_64-w64-mingw32/lib/libbrotlidec.a
 +LIBS += /usr/x86_64-w64-mingw32/lib/libbrotlicommon.a
-+LIBS += /usr/x86_64-w64-mingw32/lib/libzstd.dll.a
++#LIBS += /usr/x86_64-w64-mingw32/lib/libzstd.dll.a
 +LIBS += /usr/x86_64-w64-mingw32/lib/libunistring.a
 +
 +# ssh2 (needs zlib)

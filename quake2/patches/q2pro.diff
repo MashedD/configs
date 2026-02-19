@@ -1,0 +1,192 @@
+diff --git a/build-win32.sh b/build-win32.sh
+new file mode 100755
+index 00000000..2a582ec3
+--- /dev/null
++++ b/build-win32.sh
+@@ -0,0 +1,19 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++rm -rf build-win64
++
++meson setup build-win32 \
++    --cross-file cross-mingw32.txt \
++    --buildtype=release \
++    -Ddefault_library=static \
++    -Dc_link_args='-static -static-libgcc' \
++    --force-fallback-for=libcurl,zlib,libjpeg,libpng
++
++meson compile -C build-win32
++
++#cp -f build-win32/q2pro.exe /home/user/Data/Games/q2pro/q2pro32.exe
++#cp -f build-win32/q2proded.exe /home/user/Data/Games/q2pro/q2proded32.exe
++#cd "/home/user/Data/Games/q2pro"
++#./start-q2pro-win32-mashedd.sh
++
+diff --git a/build-win64.sh b/build-win64.sh
+new file mode 100755
+index 00000000..b5033768
+--- /dev/null
++++ b/build-win64.sh
+@@ -0,0 +1,19 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++rm -rf build-win64
++
++meson setup build-win64 \
++    --cross-file cross-mingw64.txt \
++    --buildtype=release \
++    -Ddefault_library=static \
++    -Dc_link_args="-static -static-libgcc" \
++    --force-fallback-for=libcurl,zlib,libjpeg,libpng
++
++meson compile -C build-win64 -j$(nproc --all || echo 4)
++
++#cp -f build-win64/q2pro.exe /home/user/Data/Games/q2pro/
++#cp -f build-win64/q2proded.exe /home/user/Data/Games/q2pro/
++#cd "/home/user/Data/Games/q2pro"
++#./start-q2pro-win64-mashedd.sh
++
+diff --git a/cross-mingw32.txt b/cross-mingw32.txt
+new file mode 100644
+index 00000000..82825626
+--- /dev/null
++++ b/cross-mingw32.txt
+@@ -0,0 +1,18 @@
++[binaries]
++c       = '/usr/bin/i686-w64-mingw32-gcc'
++cpp     = '/usr/bin/i686-w64-mingw32-g++'
++ar      = '/usr/bin/i686-w64-mingw32-ar'
++strip   = '/usr/bin/i686-w64-mingw32-strip'
++windres = '/usr/bin/i686-w64-mingw32-windres'
++pkgconfig = '/usr/bin/i686-w64-mingw32-pkg-config'
++
++[host_machine]
++system = 'windows'
++cpu_family = 'x86'
++cpu = 'i686'
++endian = 'little'
++
++[properties]
++needs_exe_wrapper = true
++pkg_config_libdir = ['/usr/i686-w64-mingw32/lib/pkgconfig']
++
+diff --git a/cross-mingw64.txt b/cross-mingw64.txt
+new file mode 100644
+index 00000000..f6ccc347
+--- /dev/null
++++ b/cross-mingw64.txt
+@@ -0,0 +1,17 @@
++[binaries]
++c = '/usr/bin/x86_64-w64-mingw32-gcc'
++cpp = '/usr/bin/x86_64-w64-mingw32-g++'
++ar = '/usr/bin/x86_64-w64-mingw32-ar'
++strip = '/usr/bin/x86_64-w64-mingw32-strip'
++windres = '/usr/bin/x86_64-w64-mingw32-windres'
++pkgconfig = '/usr/bin/x86_64-w64-mingw32-pkg-config'
++
++[host_machine]
++system = 'windows'
++cpu_family = 'x86_64'
++cpu = 'x86_64'
++endian = 'little'
++
++[properties]
++needs_exe_wrapper = true
++
+diff --git a/src/client/sound/al.c b/src/client/sound/al.c
+index 9343d085..2fea268c 100644
+--- a/src/client/sound/al.c
++++ b/src/client/sound/al.c
+@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
+ #define MIN_CHANNELS    16
+ 
+ static cvar_t       *al_merge_looping;
++static cvar_t       *s_ear_midon;
+ 
+ static ALuint       s_srcnums[MAX_CHANNELS];
+ static ALuint       s_stream;
+@@ -60,7 +61,7 @@ static void s_underwater_gain_hf_changed(cvar_t *self)
+         s_underwater_flag = false;
+     }
+ 
+-    qalFilterf(s_underwater_filter, AL_LOWPASS_GAINHF, Cvar_ClampValue(self, 0.001f, 1));
++    qalFilterf(s_underwater_filter, AL_LOWPASS_GAINHF, Cvar_ClampValue(self, 0.001f, 1.0f));
+ }
+ 
+ static void al_merge_looping_changed(cvar_t *self)
+@@ -88,6 +89,8 @@ static bool AL_Init(void)
+         goto fail0;
+     s_merge_looping_minval = i + 1;
+ 
++    s_ear_midon = Cvar_Get("s_ear_midon", "0", 0);
++
+     Com_DPrintf("AL_VENDOR: %s\n", qalGetString(AL_VENDOR));
+     Com_DPrintf("AL_RENDERER: %s\n", qalGetString(AL_RENDERER));
+     Com_DPrintf("AL_VERSION: %s\n", qalGetString(AL_VERSION));
+@@ -314,20 +317,31 @@ static void AL_StopChannel(channel_t *ch)
+ static void AL_PlayChannel(channel_t *ch)
+ {
+     sfxcache_t *sc = ch->sfx->cache;
++    float ref_dist, rolloff_factor, max_distance;
+ 
+ #if USE_DEBUG
+     if (s_show->integer > 1)
+         Com_Printf("%s: %s\n", __func__, ch->sfx->name);
+ #endif
+ 
++    if (s_ear_midon->integer) {
++        ref_dist = 125.0f;
++        max_distance = 0.0f; // infinite distance
++        rolloff_factor = 1.0f;
++    } else {
++        ref_dist = SOUND_FULLVOLUME;
++        max_distance = 8192.0f;
++        rolloff_factor = ch->dist_mult * (8192.0f - (float)SOUND_FULLVOLUME);
++    }
++
+     ch->srcnum = s_srcnums[ch - s_channels];
+     qalGetError();
+     qalSourcei(ch->srcnum, AL_BUFFER, sc->bufnum);
+     qalSourcei(ch->srcnum, AL_LOOPING, ch->autosound || sc->loopstart >= 0);
+     qalSourcef(ch->srcnum, AL_GAIN, ch->master_vol);
+-    qalSourcef(ch->srcnum, AL_REFERENCE_DISTANCE, SOUND_FULLVOLUME);
+-    qalSourcef(ch->srcnum, AL_MAX_DISTANCE, 8192);
+-    qalSourcef(ch->srcnum, AL_ROLLOFF_FACTOR, ch->dist_mult * (8192 - SOUND_FULLVOLUME));
++    qalSourcef(ch->srcnum, AL_REFERENCE_DISTANCE, ref_dist);
++    qalSourcef(ch->srcnum, AL_MAX_DISTANCE, max_distance);
++    qalSourcef(ch->srcnum, AL_ROLLOFF_FACTOR, rolloff_factor);
+ 
+     // force update
+     ch->fullvolume = -1;
+diff --git a/src/client/sound/qal.c b/src/client/sound/qal.c
+index 2eebcd14..98a69b2a 100644
+--- a/src/client/sound/qal.c
++++ b/src/client/sound/qal.c
+@@ -146,8 +146,10 @@ void QAL_Shutdown(void)
+ }
+ 
+ static const char *const al_drivers[] = {
+-#ifdef _WIN32
+-    "soft_oal", "openal32"
++#ifdef _WIN64
++    "soft_oal", "OpenAL64"
++#elif _WIN32
++    "soft_oal", "OpenAL32"
+ #elif (defined __APPLE__)
+     "libopenal.1.dylib", "libopenal.dylib"
+ #else
+diff --git a/src/server/mvd/parse.c b/src/server/mvd/parse.c
+index f7c7a948..052277c1 100644
+--- a/src/server/mvd/parse.c
++++ b/src/server/mvd/parse.c
+@@ -133,6 +133,8 @@ static void MVD_ParseMulticast(mvd_t *mvd, multicast_t to, int extrabits)
+     byte            *data;
+     int             length, leafnum;
+ 
++    leaf1 = NULL;
++
+     length = MSG_ReadByte();
+     length |= extrabits << 8;
+ 

@@ -17,7 +17,6 @@ git clone https://github.com/facebook/zstd.git
 cd zstd/build/cmake
 
 # Win64
-rm -rf build-cmake
 cat <<EOF>toolchain-mingw64.cmake
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
@@ -28,12 +27,12 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 EOF
+rm -rf build-cmake
 cmake -S . -B build-cmake -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_STATIC=ON -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw64.cmake
 cmake --build build-cmake
 sudo cp build-cmake/lib/libzstd.a /usr/x86_64-w64-mingw32/lib/
 
 # Win32
-rm -rf build-cmake
 cat <<EOF>toolchain-mingw32.cmake
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR x86)
@@ -44,6 +43,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 EOF
+rm -rf build-cmake
 cmake -S . -B build-cmake -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_STATIC=ON -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw32.cmake
 cmake --build build-cmake
 sudo cp build-cmake/lib/libzstd.a /usr/i686-w64-mingw32/lib/

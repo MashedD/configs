@@ -225,6 +225,144 @@ index 4d556fd..ca729b5 100644
  endif
  
  all: $(TARGET)
+diff --git a/README-MashedD.md b/README-MashedD.md
+new file mode 100644
+index 0000000..5cf34c5
+--- /dev/null
++++ b/README-MashedD.md
+@@ -0,0 +1,58 @@
++# opentdm
++
++# Notes/commands
++
++-
++
++# Building
++
++Tested on CachyOS.
++
++## Prerequisites
++
++Dependencies might be missing and some are Probably excessive.
++I didn't optimize this as it's time/cost not effective for me.
++Best might be to use Docker for the job.
++
++```bash
++sudo pacman -S cmake gcc
++
++# For cross compilation
++sudo pacman -S \
++    mingw-w64-tools \
++    mingw-w64-binutils \
++    mingw-w64-crt \
++    mingw-w64-gcc \
++    mingw-w64-headers \
++    mingw-w64-winpthreads
++paru -S \
++    mingw-w64-zlib \
++    mingw-w64-zlib-ng \
++    mingw-w64-ffmpeg \
++    mingw-w64-pkg-config \
++    mingw-w64-libpng \
++    mingw-w64-libjpeg-turbo \
++    mingw-w64-openal \
++    mingw-w64-zstd
++```
++
++## Compilation
++
++Review scripts before executing them.
++
++```bash
++./build-lin64.sh
++./clean.sh
++./build-win32.sh
++./clean.sh
++./build-win64.sh
++```
++
++# TODO
++
++- fork latest repo
++- apply changes in separate commits
++- add/change README.md
++- fix compilation warnings
++- get rid of `deps` folder
++
+diff --git a/build-lin64.sh b/build-lin64.sh
+new file mode 100755
+index 0000000..a2d23be
+--- /dev/null
++++ b/build-lin64.sh
+@@ -0,0 +1,13 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++#make clean
++make -j$(nproc)
++
++DEST="../../opentdm"
++if [ -e "$DEST" ]; then
++    cp -f gamex86_64.so "$DEST/"
++    #cd "$DEST"
++    #./start-q2pro-lin64-mashedd.sh
++fi
++
+diff --git a/build-win32.sh b/build-win32.sh
+new file mode 100755
+index 0000000..3ec68ab
+--- /dev/null
++++ b/build-win32.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++#make CONFIG_FILE=.config-win32 clean
++make CONFIG_FILE=.config-win32 -j$(nproc)
++chmod -x gamex86.dll
++
++DEST="../../opentdm"
++if [ -e "$DEST" ]; then
++    cp -f gamex86.dll "$DEST/"
++    #cd "$DEST"
++    #./start-q2pro-win32-mashedd.sh
++fi
++
+diff --git a/build-win64.sh b/build-win64.sh
+new file mode 100755
+index 0000000..99d37c3
+--- /dev/null
++++ b/build-win64.sh
+@@ -0,0 +1,14 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++#make CONFIG_FILE=.config-win64 clean
++make CONFIG_FILE=.config-win64 -j$(nproc)
++chmod -x gamex86_64.dll
++
++DEST="../../opentdm"
++if [ -e "$DEST" ]; then
++    cp -f gamex86_64.dll "$DEST/"
++    #cd "$DEST"
++    #./start-q2pro-win64-mashedd.sh
++fi
++
+diff --git a/clean.sh b/clean.sh
+new file mode 100755
+index 0000000..fc92909
+--- /dev/null
++++ b/clean.sh
+@@ -0,0 +1,9 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++rm -rf debug
++rm -rf release
++make clean
++make CONFIG_FILE=.config-win32 clean
++make CONFIG_FILE=.config-win64 clean
++
 diff --git a/g_net.h b/g_net.h
 index 1930e36..cd31cbe 100644
 --- a/g_net.h

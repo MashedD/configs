@@ -1,52 +1,181 @@
-diff --git a/build-win32.sh b/build-win32.sh
-new file mode 100755
-index 00000000..6994c47b
+diff --git a/README-MashedD.md b/README-MashedD.md
+new file mode 100644
+index 00000000..c3ffdad7
 --- /dev/null
-+++ b/build-win32.sh
-@@ -0,0 +1,19 @@
++++ b/README-MashedD.md
+@@ -0,0 +1,74 @@
++# q2pro
++
++# Notes/commands
++
++- added `s_ear_midon`: changes sound attenuation to similar as in r1q2 if using OpenAL driver. Usage:
++```
++set s_enable 2 // OpenAL - required for s_ear_midon 1
++set s_ear_midon 1 // make sound more like in r1q2
++set s_underwater 0 // hearing underwater should be improved
++```
++- win64 build uses now `OpenAL64.dll` instead of `OpenAL32.dll`
++- lin64 build now looks for game files in current folder
++  instead of `$HOME/.q2pro`
++- added new scores layout for streaming, works only with opentdm. To turn it on:
++```
++set cl_stream_scoreboard 1
++set cl_stream_scoreboard_x 0 // margin
++set cl_stream_scoreboard_offset 250 // position from the bottom
++```
++- fixed problem with displaying excessive items in address book after viewing server browser
++- fixed compilation warnings
++- change so that config file name on Linux is same as on Windows (q2config.cfg instead of config.cfg)
++
++# Building
++
++Tested on CachyOS.
++
++## Prerequisites
++
++Dependencies might be missing and some are Probably excessive.
++I didn't optimize this as it's time/cost not effective for me.
++Best might be to use Docker for the job.
++
++```bash
++sudo pacman -S gcc meson ninja pkgconaf
++
++# For cross compilation
++sudo pacman -S \
++    mingw-w64-tools \
++    mingw-w64-binutils \
++    mingw-w64-crt \
++    mingw-w64-gcc \
++    mingw-w64-headers \
++    mingw-w64-winpthreads
++paru -S \
++    mingw-w64-zlib \
++    mingw-w64-zlib-ng \
++    mingw-w64-ffmpeg \
++    mingw-w64-pkg-config \
++    mingw-w64-libpng \
++    mingw-w64-libjpeg-turbo \
++    mingw-w64-openal \
++    mingw-w64-zstd
++```
++
++## Compilation
++
++Review scripts before executing them.
++
++```bash
++./build-lin64.sh
++./build-win32.sh
++./build-win64.sh
++```
++
++# TODO
++
++- fork latest repo
++- apply changes in separate commits
++- add/change README.md
++- fix transparency problems in game menu background
++- expand q2pro.menu with additional items
++- optional: add `+bindw` from [q2pro_m](https://bitbucket.org/Makowiec/q2pro_m/src) if someone is interested - added it here as patch (q2pro_m-bindw.patch)
++
+diff --git a/build-lin64.sh b/build-lin64.sh
+new file mode 100755
+index 00000000..5750a9a4
+--- /dev/null
++++ b/build-lin64.sh
+@@ -0,0 +1,22 @@
 +#!/usr/bin/env bash
 +set -Eeuo pipefail
 +
-+rm -rf build-win64
++meson setup build-lin64 --buildtype=release || :
++meson compile -C build-lin64
++
++DEST="../.."
++if [ -e "$DEST/baseq2" ]; then
++    #cp -f build-lin64/gamex86_64.so "$DEST/baseq2"
++    cp -f build-lin64/q2pro "$DEST"
++    #cp -f build-win64/q2proded "$DEST"
++    cd "$DEST"
++    #./start-q2pro-lin64-mashedd.sh
++    gamescope \
++        -f \
++        --force-grab-cursor \
++        -W 800 -H 600 \
++        -r 144 \
++        -S stretch \
++        -- ./q2pro +set game opentdm +map q2duel5
++fi
++
+diff --git a/build-win32.sh b/build-win32.sh
+new file mode 100755
+index 00000000..7e4e98f6
+--- /dev/null
++++ b/build-win32.sh
+@@ -0,0 +1,23 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
 +
 +meson setup build-win32 \
 +    --cross-file cross-mingw32.txt \
 +    --buildtype=release \
 +    -Ddefault_library=static \
-+    -Dc_link_args='-static -static-libgcc' \
-+    --force-fallback-for=libcurl,zlib,libjpeg,libpng
-+
++    -Dc_link_args='-static -static-libgcc -D_WIN32_WINNT=0x0501 -DNTDDI_VERSION=0x05010200' \
++    --force-fallback-for=libcurl,zlib,libjpeg,libpng || :
 +meson compile -C build-win32
++chmod -x build-win32/gamex86.dll
 +
-+#cp -f build-win32/q2pro.exe $HOME/Data/Games/q2pro/q2pro32.exe
-+#cp -f build-win32/q2proded.exe $HOME/user/Data/Games/q2pro/q2proded32.exe
-+#cd "$HOME/user/Data/Games/q2pro"
-+#./start-q2pro-win32-mashedd.sh
++DEST="../.."
++if [ -e "$DEST/baseq2" ]; then
++    cp -f build-win32/gamex86.dll "$DEST/baseq2"
++    cp -f build-win32/q2pro.exe "$DEST/q2pro32.exe"
++    cp -f "$DEST/q2pro32.exe" "$DEST/q2pro32_winxp.exe" // requires bcrypt.dll
++    #cp -f build-win32/q2proded.exe "$DEST/q2proded32.exe"
++    cd "$DEST"
++    python3 -c 'with open("q2pro32_winxp.exe", "r+b") as f: f.seek(0xC8); f.write(b"\x05")'
++    #./start-q2pro-win32-mashedd.sh
++fi
 +
 diff --git a/build-win64.sh b/build-win64.sh
 new file mode 100755
-index 00000000..11f5b09c
+index 00000000..bc9d4a53
 --- /dev/null
 +++ b/build-win64.sh
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,22 @@
 +#!/usr/bin/env bash
 +set -Eeuo pipefail
-+
-+rm -rf build-win64
 +
 +meson setup build-win64 \
 +    --cross-file cross-mingw64.txt \
 +    --buildtype=release \
 +    -Ddefault_library=static \
 +    -Dc_link_args="-static -static-libgcc" \
-+    --force-fallback-for=libcurl,zlib,libjpeg,libpng
++    --force-fallback-for=libcurl,zlib,libjpeg,libpng || :
++meson compile -C build-win64 -j$(nproc)
++chmod -x build-win64/gamex86_64.dll
 +
-+meson compile -C build-win64 -j$(nproc --all || echo 4)
++DEST="../.."
++if [ -e "$DEST/baseq2" ]; then
++    cp -f build-win64/gamex86_64.dll "$DEST/baseq2"
++    cp -f build-win64/q2pro.exe "$DEST"
++    #cp -f build-win64/q2proded.exe "$DEST"
++    cd "$DEST"
++    #./start-q2pro-win64-mashedd.sh
++    wine q2pro.exe +set game opentdm +map q2duel5
++fi
 +
-+#cp -f build-win64/q2pro.exe $HOME/Data/Games/q2pro/
-+#cp -f build-win64/q2proded.exe $HOME/Data/Games/q2pro/
-+#cd "$HOME/Data/Games/q2pro"
-+#./start-q2pro-win64-mashedd.sh
+diff --git a/clean.sh b/clean.sh
+new file mode 100755
+index 00000000..26ed9602
+--- /dev/null
++++ b/clean.sh
+@@ -0,0 +1,8 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++rm -rf .vscode
++rm -rf build-lin64
++rm -rf build-win32
++rm -rf build-win64
 +
 diff --git a/cross-mingw32.txt b/cross-mingw32.txt
 new file mode 100644
@@ -95,6 +224,26 @@ index 00000000..f6ccc347
 +[properties]
 +needs_exe_wrapper = true
 +
+diff --git a/inc/common/common.h b/inc/common/common.h
+index fe93497f..2205a5b1 100644
+--- a/inc/common/common.h
++++ b/inc/common/common.h
+@@ -38,11 +38,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
+ #define COM_POSTEXEC_CFG    "postexec.cfg"
+ #define COM_POSTINIT_CFG    "postinit.cfg"
+ 
+-#ifdef _WIN32
++//#ifdef _WIN32
+ #define COM_CONFIG_CFG      "q2config.cfg"
+-#else
+-#define COM_CONFIG_CFG      "config.cfg"
+-#endif
++//#else
++//#define COM_CONFIG_CFG      "config.cfg"
++//#endif
+ 
+ // FIXME: rename these
+ #define COM_HISTORYFILE_NAME    ".conhistory"
 diff --git a/meson_options.txt b/meson_options.txt
 index f964e001..53ebdf55 100644
 --- a/meson_options.txt
@@ -108,6 +257,654 @@ index f964e001..53ebdf55 100644
    description: 'Default value for "homedir" console variable')
  
  option('icmp-errors',
+diff --git a/q2pro_m-bindw.patch b/q2pro_m-bindw.patch
+new file mode 100644
+index 00000000..495fbfd9
+--- /dev/null
++++ b/q2pro_m-bindw.patch
+@@ -0,0 +1,202 @@
++From d2719f9aa41c8453ec6f7da94f2294bb5a4dedf9 Mon Sep 17 00:00:00 2001
++From: MashedD <sl8code@gmail.com>
++Date: Wed, 4 Feb 2026 10:35:52 +0100
++Subject: [PATCH] Add +bindw
++
++---
++ README.md                | 16 +++++++++++
++ inc/common/cmd.h         | 12 ++++++++
++ src/client/input.c       | 20 ++++++++-----
++ src/client/ui/q2pro.menu |  1 +
++ src/common/cmd.c         | 62 ++++++++++++++++++++++++++++++++++++++++
++ 5 files changed, 104 insertions(+), 7 deletions(-)
++
++diff --git a/README.md b/README.md
++index 3229f721..f2ebabdb 100644
++--- a/README.md
+++++ b/README.md
++@@ -30,3 +30,19 @@ BUILDING.md file for instructions.
++ 
++ For information on using and configuring Q2PRO, refer to client and server
++ manuals available in doc/ subdirectory.
+++
+++## Additional Changes
+++
+++This source code is based on latest Skullers with added changes made
+++by Maciej Szybiak: `https://bitbucket.org/Makowiec/q2pro_m`:
+++
+++- weapon dropping hotkey +bind_w
+++Added weapon use modifier. If key is held and weapon key
+++ used it will drop weapons instead of equipping them. Command +dropw Example
+++ usage: "bind alt +dropw" - after that alt + R will drop railgun from player's
+++ inventory.           
+++- ...
+++
+++set cl_warn_on_fps_rounding 0
+++src/common/common.c - change sources link?
+++
++diff --git a/inc/common/cmd.h b/inc/common/cmd.h
++index a6b1fc97..c6ce8d75 100644
++--- a/inc/common/cmd.h
+++++ b/inc/common/cmd.h
++@@ -209,3 +209,15 @@ int Cmd_ParseOptions(const cmd_option_t *opt);
++ void Cmd_PrintHelp(const cmd_option_t *opt);
++ void Cmd_PrintUsage(const cmd_option_t *opt, const char *suffix);
++ void Cmd_PrintHint(void);
+++
+++// q2pro_m - move that struct so it can be used in cmd.c
+++typedef struct kbutton_s {
+++    int         down[2];         // key nums holding it down
+++    unsigned    downtime;        // msec timestamp
+++    unsigned    msec;            // msec down this frame
+++    int         state;
+++} kbutton_t;
+++
+++// q2pro_m - drop command
+++extern kbutton_t in_drop;
+++
++diff --git a/src/client/input.c b/src/client/input.c
++index a5d14215..bb40723a 100644
++--- a/src/client/input.c
+++++ b/src/client/input.c
++@@ -229,13 +229,6 @@ Key_Event (int key, bool down, unsigned time);
++ ===============================================================================
++ */
++ 
++-typedef struct {
++-    int         down[2];        // key nums holding it down
++-    unsigned    downtime;        // msec timestamp
++-    unsigned    msec;            // msec down this frame
++-    int         state;
++-} kbutton_t;
++-
++ static kbutton_t    in_klook;
++ static kbutton_t    in_left, in_right, in_forward, in_back;
++ static kbutton_t    in_lookup, in_lookdown, in_moveleft, in_moveright;
++@@ -385,6 +378,17 @@ static void IN_UseUp(void)
++     KeyUp(&in_use);
++ }
++ 
+++static void IN_DropDown(void)
+++{
+++    KeyDown(&in_drop);
+++}
+++
+++static void IN_DropUp(void)
+++{
+++    KeyUp(&in_drop);
+++    in_drop.state = 0;
+++}
+++
++ static void IN_Impulse(void)
++ {
++     in_impulse = Q_atoi(Cmd_Argv(1));
++@@ -673,6 +677,8 @@ static const cmdreg_t c_input[] = {
++     { "-attack", IN_AttackUp },
++     { "+use", IN_UseDown },
++     { "-use", IN_UseUp },
+++    { "+dropw", IN_DropDown },
+++    { "-dropw", IN_DropUp },
++     { "impulse", IN_Impulse },
++     { "+klook", IN_KLookDown },
++     { "-klook", IN_KLookUp },
++diff --git a/src/client/ui/q2pro.menu b/src/client/ui/q2pro.menu
++index e935e8b0..ae372469 100644
++--- a/src/client/ui/q2pro.menu
+++++ b/src/client/ui/q2pro.menu
++@@ -371,4 +371,5 @@ begin weapons
++     bind "railgun" "use Railgun"
++     bind "bfg10k" "use BFG10K"
++     bind "grenades" "use Grenades"
+++    bind "drop key" "+dropw"
++ end
++diff --git a/src/common/cmd.c b/src/common/cmd.c
++index 9ab23baf..c0ec9178 100644
++--- a/src/common/cmd.c
+++++ b/src/common/cmd.c
++@@ -45,6 +45,8 @@ cmdbuf_t        cmd_buffer;
++ // points to the buffer current command is executed from
++ cmdbuf_t        *cmd_current;
++ 
+++kbutton_t in_drop;
+++
++ /*
++ ============
++ Cmd_Wait_f
++@@ -1599,6 +1601,21 @@ void Cmd_ExecuteCommand(cmdbuf_t *buf)
++     }
++ }
++ 
+++char* concat(const char *s1, const char *s2)
+++{
+++    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the NULL
+++    strcpy(result, s1);
+++    strcat(result, s2);
+++    return result;
+++}
+++
+++bool startsWith(const char *str, const char *start)
+++{
+++    size_t lenpre = strlen(start),
+++        lenstr = strlen(str);
+++    return lenstr < lenpre ? false : strncmp(start, str, lenpre) == 0;
+++}
+++
++ /*
++ ============
++ Cmd_ExecuteString
++@@ -1608,6 +1625,51 @@ A complete command line has been parsed, so try to execute it
++ */
++ void Cmd_ExecuteString(cmdbuf_t *buf, const char *text)
++ {
+++    // +dropw command for easy weapon dropping
+++    // get first three chars for comparison
+++    char dest[4];
+++    strncpy(dest, text, 3);
+++    dest[3] = 0;
+++
+++    // if command start with use and in_drop is pressed then we want to drop weapon instead
+++    if (!strcmp(dest, "use") && in_drop.state) {
+++        // create command name
+++        char *cname = malloc(5);
+++        memcpy(cname, "drop", 4);
+++
+++        // concat cname and the rest of the command
+++        char *command = concat(cname, text + 3);
+++
+++        // execute the command like nothing ever happened
+++        Cmd_TokenizeString(command, true);
+++        Cmd_ExecuteCommand(buf);
+++
+++        // drop ammo - check what weapon are we using and queue the drop ammo command
+++        char leftovers[256];
+++        strncpy(leftovers, text + 4, strlen(text + 4)); // copy the leftovers (weapon name)
+++
+++        if (startsWith(leftovers, "Railgun")) {
+++            Cbuf_AddText(buf, "drop slugs");
+++        }
+++        else if (startsWith(leftovers, "Rocket Launcher")) {
+++            Cbuf_AddText(buf, "drop rockets");
+++        }
+++        else if (startsWith(leftovers, "Shotgun") || startsWith(leftovers, "Super Shotgun")) {
+++            Cbuf_AddText(buf, "drop shells");
+++        }
+++        else if (startsWith(leftovers, "Chaingun") || startsWith(leftovers, "Machinegun")) {
+++            Cbuf_AddText(buf, "drop bullets");
+++        }
+++        else if (startsWith(leftovers, "Hyperblaster") || startsWith(leftovers, "BFG10K")) {
+++            Cbuf_AddText(buf, "drop cells");
+++        }
+++        else if (startsWith(leftovers, "Grenade Launcher")) {
+++            Cbuf_AddText(buf, "drop grenades");
+++        }
+++
+++        return;
+++    }
+++
++     Cmd_TokenizeString(text, true);
++     Cmd_ExecuteCommand(buf);
++ }
++-- 
++2.52.0
++
+diff --git a/src/client/client.h b/src/client/client.h
+index 27fe81a8..912adf76 100644
+--- a/src/client/client.h
++++ b/src/client/client.h
+@@ -603,6 +603,13 @@ extern cvar_t   *info_hand;
+ extern cvar_t   *info_gender;
+ extern cvar_t   *info_uf;
+ 
++//
++// streaming
++//
++extern cvar_t   *cl_stream_scoreboard;
++extern cvar_t   *cl_stream_scoreboard_x;
++extern cvar_t   *cl_stream_scoreboard_offset;
++
+ //=============================================================================
+ 
+ static inline void CL_AdvanceValue(float *restrict val, float target, float speed)
+diff --git a/src/client/main.c b/src/client/main.c
+index 3f9a15d7..2d85a572 100644
+--- a/src/client/main.c
++++ b/src/client/main.c
+@@ -95,6 +95,13 @@ cvar_t  *info_hand;
+ cvar_t  *info_gender;
+ cvar_t  *info_uf;
+ 
++//
++// streaming
++//
++cvar_t  *cl_stream_scoreboard;
++cvar_t  *cl_stream_scoreboard_x;
++cvar_t  *cl_stream_scoreboard_offset;
++
+ #if USE_REF
+ extern cvar_t *gl_modulate_world;
+ extern cvar_t *gl_modulate_entities;
+@@ -1990,7 +1997,7 @@ static bool match_ignore_nick(const char *nick, const char *s)
+         return true;
+ 
+     if (*s == '[') {
+-        char *p = strstr(s + 1, "] ");
++        const char *p = strstr(s + 1, "] ");
+         if (p)
+             return match_ignore_nick_2(nick, p + 2);
+     }
+@@ -2827,6 +2834,12 @@ static void CL_InitLocal(void)
+     info_gender->modified = false; // clear this so we know when user sets it manually
+     info_uf = Cvar_Get("uf", "", CVAR_USERINFO);
+ 
++    //
++    // streaming
++    //
++    cl_stream_scoreboard = Cvar_Get("cl_stream_scoreboard", "0", CVAR_ARCHIVE);
++    cl_stream_scoreboard_x = Cvar_Get("cl_stream_scoreboard_x", "0", CVAR_ARCHIVE);
++    cl_stream_scoreboard_offset = Cvar_Get("cl_stream_scoreboard_offset", "250", CVAR_ARCHIVE);
+ 
+     //
+     // macros
+diff --git a/src/client/parse.c b/src/client/parse.c
+index c7b40f7c..8f076983 100644
+--- a/src/client/parse.c
++++ b/src/client/parse.c
+@@ -986,9 +986,7 @@ static void CL_ParseReconnect(void)
+ #if USE_AUTOREPLY
+ static void CL_CheckForVersion(const char *s)
+ {
+-    char *p;
+-
+-    p = strstr(s, ": ");
++    const char *p = strstr(s, ": ");
+     if (!p) {
+         return;
+     }
+diff --git a/src/client/precache.c b/src/client/precache.c
+index a7adc32e..694a912f 100644
+--- a/src/client/precache.c
++++ b/src/client/precache.c
+@@ -32,14 +32,12 @@ If model or skin are found to be invalid, replaces them with sane defaults.
+ */
+ void CL_ParsePlayerSkin(char *name, char *model, char *skin, const char *s)
+ {
+-    size_t len;
+-    char *t;
+-
+-    len = strlen(s);
++    size_t len = strlen(s);
++    char *p;
+     Q_assert(len < MAX_QPATH);
+ 
+     // isolate the player's name
+-    t = strchr(s, '\\');
++    const char *t = strchr(s, '\\');
+     if (t) {
+         len = t - s;
+         strcpy(model, t + 1);
+@@ -55,18 +53,18 @@ void CL_ParsePlayerSkin(char *name, char *model, char *skin, const char *s)
+     }
+ 
+     // isolate the model name
+-    t = strchr(model, '/');
+-    if (!t)
+-        t = strchr(model, '\\');
+-    if (!t)
++    p = strchr(model, '/');
++    if (!p)
++        p = strchr(model, '\\');
++    if (!p)
+         goto default_model;
+-    *t = 0;
++    *p = 0;
+ 
+     // isolate the skin name
+-    strcpy(skin, t + 1);
++    strcpy(skin, p + 1);
+ 
+     // fix empty model to male
+-    if (t == model)
++    if (p == model)
+         strcpy(model, "male");
+ 
+     // apply restrictions on skins
+diff --git a/src/client/screen.c b/src/client/screen.c
+index eddfcb5b..5ee63b2f 100644
+--- a/src/client/screen.c
++++ b/src/client/screen.c
+@@ -149,7 +149,7 @@ SCR_DrawStringMulti
+ static void SCR_DrawStringMulti(int x, int y, int flags, size_t maxlen,
+                                 const char *s, qhandle_t font)
+ {
+-    char    *p;
++    const char *p;
+     size_t  len;
+     int     last_x = x;
+     int     last_y = y;
+@@ -2223,6 +2223,287 @@ static void SCR_DrawStats(void)
+     SCR_ExecuteLayoutString(cl.configstrings[CS_STATUSBAR]);
+ }
+ 
++typedef struct {
++    char name[32];
++    int frags;
++    int deaths;
++    int net;
++    int ping;
++    qboolean has_stats;
++    qboolean ready;  // TODO: unused; for warmup
++    qboolean captain;
++} stream_player_t;
++
++typedef struct {
++    char name[32];
++    int score;
++    float avg_ping;  // TODO: unused
++    char skin[32];
++    stream_player_t players[16];
++    int num_players;
++} stream_team_t;
++
++// Parse lines like "Team name     -42"
++static qboolean ParseTeamLine(const char *line, char *out_name, size_t name_size, int *out_score)
++{
++    if (!line || !*line)
++        return qfalse;
++
++    // Find last digits, can be negative
++    const char *p = line + strlen(line) - 1;
++    while (p >= line && !isdigit(*p) && *p != '-') p--;
++
++    if (p < line || (!isdigit(*p) && *p != '-'))
++        return qfalse;
++
++    // Go to starting position of a number (including -)
++    if (*p == '-') p--;
++    while (p >= line && isdigit(*p)) p--;
++    p++;  // beginning of a number
++
++    *out_score = atoi(p);
++
++    // Team name - everything before a number, remove trailing spaces
++    ptrdiff_t name_len = p - line;
++    while (name_len > 0 && isspace(line[name_len-1])) name_len--;
++
++    if (name_len <= 0 || name_len >= (ptrdiff_t)name_size)
++        return qfalse;
++
++    strncpy(out_name, line, name_len);
++    out_name[name_len] = '\0';
++
++    return qtrue;
++}
++
++static inline int is_number(const char *s) {
++    if (!s || !*s) return 0;
++    if (*s == '-' || *s == '+') s++;
++    return *s && isdigit((unsigned char)*s);
++}
++
++static qboolean parse_status_line_right_to_left(const char *line, stream_player_t *out)
++{
++    char buf[40];
++    strncpy(buf, line, sizeof(buf)-1);
++    buf[sizeof(buf)-1] = '\0';
++
++    char *tokens[16];
++    int   tok_count = 0;
++
++    // Split into tokens (very simple version)
++    char *p = buf;
++    while (*p) {
++        while (*p && isspace((unsigned char)*p)) p++;
++        if (!*p) break;
++        tokens[tok_count++] = p;
++        while (*p && !isspace((unsigned char)*p)) p++;
++        if (*p) *p++ = '\0';  // terminate token
++    }
++
++    if (tok_count == 0)
++        return false;
++
++    // Rule 1: last token is ALWAYS the ping (or last value)
++    char *last = tokens[tok_count-1];
++    if (!is_number(last))
++        return false;   // must end with number
++
++    out->ping = atoi(last);
++    tok_count--;  // remove ping
++
++    // Rule 2: optional [READY] right before ping
++    out->ready = false;
++    if (tok_count >= 1 && strcmp(tokens[tok_count-1], "[READY]") == 0) {
++        out->ready = true;
++        tok_count--;
++    }
++
++    // Rule 3: if now last 3 tokens are numbers → stats mode
++    out->has_stats = false;
++    if (tok_count >= 3 &&
++        is_number(tokens[tok_count-1]) &&
++        is_number(tokens[tok_count-2]) &&
++        is_number(tokens[tok_count-3])) {
++
++        out->frags         = atoi(tokens[tok_count-3]);
++        out->deaths        = atoi(tokens[tok_count-2]);
++        out->net           = atoi(tokens[tok_count-1]);
++        out->has_stats     = true;
++
++        tok_count -= 3;
++    }
++
++    // Name: first 15 chars, TODO: remove trailing spaces
++    strncpy(out->name, line, 15);
++    return true;
++}
++
++static void SCR_DrawOpenTDMScores(const char *s)
++{
++    stream_team_t team1 = {0}, team2 = {0};
++    //char time_str[64] = {0};
++    //char server_name[64] = {0};
++
++    char *token;
++    char **string_list = NULL;
++    int num_strings = 0;
++    int max_strings = 64;
++
++    if (!s[0])
++        return;
++
++    string_list = Z_Malloc(max_strings * sizeof(char*));
++
++    // Step 1: Collect all text values
++    while (s) {
++        token = COM_Parse(&s);
++        if (!strcmp(token, "string") || !strcmp(token, "string2")) {
++            token = COM_Parse(&s);
++            if (num_strings < max_strings - 1) {
++                // For debugging:
++                //HUD_DrawString(50, 120 + (num_strings * 15), token);
++                //Com_Printf("%s\n", token);
++                char *copy = Z_Malloc(strlen(token) + 1);
++                if (copy) {
++                    strcpy(copy, token);
++                    string_list[num_strings++] = copy;
++                }
++            }
++        }
++    }
++
++    if (num_strings < 4) {
++        Z_Free(string_list);
++        return;
++    }
++
++    // Step 2: Extract team names and scores
++    if (ParseTeamLine(string_list[1], team1.name, sizeof(team1.name), &team1.score) == false) {
++        strncpy(team1.name, "Hometeam", sizeof(team1.name));
++        team1.score = 0;
++    }
++
++    if (ParseTeamLine(string_list[2], team2.name, sizeof(team2.name), &team2.score) == false) {
++        strncpy(team2.name, "Visitors", sizeof(team2.name));
++        team2.score = 0;
++    }
++
++    // Time
++    //strncpy(time_str, string_list[3], sizeof(time_str));
++
++    // Check for old scoreboard
++    if (strstr(string_list[4], "oldscoreboard:")) {
++        // ...
++    }
++
++    // Step 3: Find team headers (format "Name:avg(skin)")
++    for (int i = 4; i < num_strings; i++) {
++        char *hdr = string_list[i];
++        if (strchr(hdr, ':') && strchr(hdr, '(') && strchr(hdr, ')')) {
++            if (strstr(hdr, team1.name)) {
++                sscanf(hdr, "%[^:]:%f%s", team1.name, &team1.avg_ping, team1.skin);
++            } else {
++                sscanf(hdr, "%[^:]:%f%s", team2.name, &team2.avg_ping, team2.skin);
++                break;
++            }
++        }
++    }
++
++    // Step 4: Find players (by column headers, interleaved team1/team2)
++    int player_idx = 0;
++    int start_players = 0;
++    int teams_count = 0;
++    for (int i = 6; i < num_strings; i++) {
++        char *line = string_list[i];
++        if (!strcmp(line, " Name            Frags Dths Net Ping") || !strcmp(line, " Name")) {
++            start_players = i + 1;  // skip columns
++            teams_count++;
++            continue;
++        }
++    }
++
++    for (int i = start_players; i < num_strings; i++) {
++        char *line = string_list[i];
++        if (!strcmp(line, " Spectators")) break;
++
++        // Parse player line
++        stream_player_t pl = {};
++        qboolean is_player = parse_status_line_right_to_left(line, &pl);
++        if (!is_player)
++            break;
++        pl.captain = i + 1 < num_strings && !strcmp(string_list[i+1], "*");
++
++        if (teams_count == 1) {
++            if (team2.avg_ping == 0)
++                team1.players[team1.num_players++] = pl;
++            else
++                team2.players[team2.num_players++] = pl;
++        } else {
++            if (player_idx % 2 == 0)
++                team1.players[team1.num_players++] = pl;
++            else
++                team2.players[team2.num_players++] = pl;
++        }
++
++        player_idx++;
++    }
++
++    // Step 5: Server name (last string unless there are spectators)
++    //strncpy(server_name, string_list[num_strings-1], sizeof(server_name));
++
++    // Step 6: Drawing
++    char buf[128];
++    int x = cl_stream_scoreboard_x->integer;
++    int x2 = scr.hud_width - x - (sizeof("Name            Frags Dths Net Ping") * CONCHAR_WIDTH);
++    int y = scr.hud_height - cl_stream_scoreboard_offset->integer - (8 * CONCHAR_HEIGHT);
++
++    // Team headers
++    Q_snprintf(buf, sizeof(buf), "%s: %d %s", team1.name, team1.score, team1.skin);
++    HUD_DrawAltString(x, y, buf);
++    Q_snprintf(buf, sizeof(buf), "%s: %d %s", team2.name, team2.score, team2.skin);
++    HUD_DrawAltString(x2, y, buf);
++    y += CONCHAR_HEIGHT;
++
++    // Column names
++    HUD_DrawAltString(x, y,  "Name            Frags Dths Net Ping");
++    HUD_DrawAltString(x2, y, "Name            Frags Dths Net Ping");
++    y += CONCHAR_HEIGHT;
++
++    // Team1 players
++    int old_y = y;
++    for (int p = 0; p < team1.num_players; p++) {
++        HUD_DrawString(x, y, team1.players[p].name);
++        Q_snprintf(buf, sizeof(buf), "%5d %4d %3d %4d %s",
++            team1.players[p].frags, team1.players[p].deaths,
++            team1.players[p].net, team1.players[p].ping,
++            team1.players[p].captain ? "*" : "");
++        HUD_DrawString(x + (CONCHAR_WIDTH * 16), y, buf);
++
++        y += CONCHAR_HEIGHT;
++    }
++
++    y = old_y;
++    // Team2 players
++    for (int p = 0; p < team2.num_players; p++) {
++        HUD_DrawString(x2, y, team2.players[p].name);
++        Q_snprintf(buf, sizeof(buf), "%5d %4d %3d %4d %s",
++                   team2.players[p].frags, team2.players[p].deaths,
++                   team2.players[p].net, team2.players[p].ping,
++                   team2.players[p].captain ? "*" : "");
++        HUD_DrawString(x2 + (CONCHAR_WIDTH * 16), y, buf);
++        y += CONCHAR_HEIGHT;
++    }
++
++    // Footer
++    //y += CONCHAR_HEIGHT;
++    //Q_snprintf(buf, sizeof(buf), "%s %s", server_name, time_str);
++    //HUD_DrawString(x, y, buf);
++
++    // Cleanup
++    Z_Free(string_list);
++}
++
+ static void SCR_DrawLayout(void)
+ {
+     if (scr_draw2d->integer == 3 && !Key_IsDown(K_F1))
+@@ -2235,6 +2516,17 @@ static void SCR_DrawLayout(void)
+         return;
+ 
+ draw:
++
++    if (cl_stream_scoreboard->value
++        && cl.frame.ps.stats[STAT_LAYOUTS] & LAYOUTS_LAYOUT
++        && *cl.layout
++        && cl.layout[0] == 'x'
++        && cl.layout[1] == 'v'
++        && cl.layout[3] == '7')
++    {
++        SCR_DrawOpenTDMScores(cl.layout);
++        return;
++    }
+     SCR_ExecuteLayoutString(cl.layout);
+ }
+ 
 diff --git a/src/client/sound/al.c b/src/client/sound/al.c
 index 9343d085..2fea268c 100644
 --- a/src/client/sound/al.c
@@ -190,6 +987,20 @@ index 2eebcd14..98a69b2a 100644
  #elif (defined __APPLE__)
      "libopenal.1.dylib", "libopenal.dylib"
  #else
+diff --git a/src/client/ui/servers.c b/src/client/ui/servers.c
+index 28e3a5c2..61575ac1 100644
+--- a/src/client/ui/servers.c
++++ b/src/client/ui/servers.c
+@@ -233,6 +233,9 @@ void UI_StatusEvent(const serverStatus_t *status)
+         if (m_servers.list.numItems >= MAX_STATUS_SERVERS) {
+             return;
+         }
++        // reject stale replies from previous ping cycle
++        if (com_eventTime > m_servers.timestamp)
++            return;
+         m_servers.list.numItems++;
+         hostname = UI_CopyString(NET_AdrToString(&net_from));
+         timestamp = m_servers.timestamp;
 diff --git a/src/server/mvd/parse.c b/src/server/mvd/parse.c
 index f7c7a948..052277c1 100644
 --- a/src/server/mvd/parse.c

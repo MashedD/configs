@@ -1,3 +1,190 @@
+diff --git a/README-MashedD.md b/README-MashedD.md
+new file mode 100644
+index 0000000..57ec223
+--- /dev/null
++++ b/README-MashedD.md
+@@ -0,0 +1,101 @@
++# jump
++
++# Notes/commands
++
++- use `store` command to save player position
++- use `recall` command to restore player position
++- use `replay global` to watch world's best replay of the map
++- this mod requires commander head model from paid version, but it can be replaced to something
++  different in `jump_mod.cfg`s `model_store`
++
++# Building
++
++Tested on CachyOS.
++
++## Prerequisites
++
++Dependencies might be missing and some are Probably excessive.
++I didn't optimize this as it's time/cost not effective for me.
++Best might be to use Docker for the job.
++
++```bash
++sudo pacman -S cmake gcc curl
++
++# For cross compilation
++sudo pacman -S \
++    mingw-w64-tools \
++    mingw-w64-binutils \
++    mingw-w64-crt \
++    mingw-w64-gcc \
++    mingw-w64-headers \
++    mingw-w64-winpthreads
++paru -S \
++    mingw-w64-zlib \
++    mingw-w64-zlib-ng \
++    mingw-w64-ffmpeg \
++    mingw-w64-pkg-config \
++    mingw-w64-libpng \
++    mingw-w64-libjpeg-turbo \
++    mingw-w64-openal \
++    mingw-w64-zstd
++
++# Build zstd static version if missing in:
++# /usr/x86_64-w64-mingw32/lib/libzstd.a
++# /usr/i686-w64-mingw32/lib/libzstd.a
++cd /tmp
++git clone https://github.com/facebook/zstd.git
++cd zstd/build/cmake
++
++# For Win64
++cat <<EOF>toolchain-mingw64.cmake
++set(CMAKE_SYSTEM_NAME Windows)
++set(CMAKE_SYSTEM_PROCESSOR x86_64)
++set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
++set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
++set(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32)
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
++EOF
++rm -rf build-cmake
++cmake -S . -B build-cmake -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_STATIC=ON -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw64.cmake
++cmake --build build-cmake
++sudo cp build-cmake/lib/libzstd.a /usr/x86_64-w64-mingw32/lib/
++
++# For Win32
++cat <<EOF>toolchain-mingw32.cmake
++set(CMAKE_SYSTEM_NAME Windows)
++set(CMAKE_SYSTEM_PROCESSOR x86)
++set(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
++set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
++set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
++EOF
++rm -rf build-cmake
++cmake -S . -B build-cmake -DZSTD_BUILD_SHARED=OFF -DZSTD_BUILD_STATIC=ON -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw32.cmake
++cmake --build build-cmake
++sudo cp build-cmake/lib/libzstd.a /usr/i686-w64-mingw32/lib/
++```
++
++## Compilation
++
++Review scripts before executing them.
++
++```bash
++./build-lin64.sh
++./clean.sh
++./build-win32.sh
++./clean.sh
++./build-win64.sh
++```
++
++# TODO
++
++- fork latest repo
++- apply changes in separate commits
++- add/change README.md
++- fix compilation warnings
++- fix bug: after first use of `store` and `recall` - timer shows wrong value until another `recall`
++
+diff --git a/build-lin64.sh b/build-lin64.sh
+new file mode 100755
+index 0000000..1706593
+--- /dev/null
++++ b/build-lin64.sh
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++#rm -rf debug
++#rm -rf release
++#make clean
++make -j$(nproc)
++
++DEST="../../jump"
++if [ -e "$DEST" ]; then
++    cp -f release/gamex86_64.so "$DEST/"
++    #cd "$DEST"
++    #./start-q2pro-lin64-mashedd.sh
++fi
++
+diff --git a/build-win32.sh b/build-win32.sh
+new file mode 100755
+index 0000000..7a8632f
+--- /dev/null
++++ b/build-win32.sh
+@@ -0,0 +1,16 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++#rm -rf debug
++#rm -rf release
++#make -f makefile.win32 clean
++make -f makefile.win32 -j$(nproc)
++chmod -x release/gamex86.dll
++
++DEST="../../jump"
++if [ -e "$DEST" ]; then
++    cp -f release/gamex86.dll "$DEST/"
++    #cd "$DEST"
++    #./start-q2pro-win32-mashedd.sh
++fi
++
+diff --git a/build-win64.sh b/build-win64.sh
+new file mode 100755
+index 0000000..470ce62
+--- /dev/null
++++ b/build-win64.sh
+@@ -0,0 +1,16 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++#rm -rf debug
++#rm -rf release
++#make -f makefile.win64 clean
++make -f makefile.win64 -j$(nproc)
++chmod -x release/gamex86_64.dll
++
++DEST="../../jump"
++if [ -e "$DEST" ]; then
++    cp -f release/gamex86_64.dll "$DEST/"
++    #cd "$DEST"
++    #./start-q2pro-win64-mashedd.sh
++fi
++
+diff --git a/clean.sh b/clean.sh
+new file mode 100755
+index 0000000..117800b
+--- /dev/null
++++ b/clean.sh
+@@ -0,0 +1,9 @@
++#!/usr/bin/env bash
++set -Eeuo pipefail
++
++rm -rf debug
++rm -rf release
++make clean
++make -f makefile.win32 clean
++make -f makefile.win64 clean
++
 diff --git a/g_local.h b/g_local.h
 index f65e1f1..f22a63f 100644
 --- a/g_local.h
@@ -16,6 +203,24 @@ index f65e1f1..f22a63f 100644
 -#include "global.h"
 \ No newline at end of file
 +#include "global.h"
+diff --git a/g_main.c b/g_main.c
+index a478421..40d006e 100644
+--- a/g_main.c
++++ b/g_main.c
+@@ -137,7 +137,12 @@ Returns a pointer to the structure with all entry points
+ and global variables
+ =================
+ */
+-game_export_t *GetGameAPI (game_import_t *import)
++#ifdef _WIN32
++#define DLL_EXPORT __declspec(dllexport)
++#else
++#define DLL_EXPORT __attribute__((visibility("default"), externally_visible))
++#endif
++DLL_EXPORT game_export_t *GetGameAPI (game_import_t *import)
+ {
+ 	gi = *import;
+ 
 diff --git a/global.c b/global.c
 index 72f4752..69290b9 100644
 --- a/global.c
@@ -88,10 +293,10 @@ index cf7feae..35302aa 100644
  GAME_OBJS = \
 diff --git a/makefile.win32 b/makefile.win32
 new file mode 100644
-index 0000000..f1567fd
+index 0000000..3c14cdd
 --- /dev/null
 +++ b/makefile.win32
-@@ -0,0 +1,80 @@
+@@ -0,0 +1,100 @@
 +# Quake2 Jump Makefile
 +
 +# Complier flags
@@ -102,15 +307,35 @@ index 0000000..f1567fd
 +		 -Wno-implicit-function-declaration \
 +		 -Wno-incompatible-pointer-types \
 +		 -Wno-pointer-to-int-cast \
++		 -DHAVE_CURL -DCURL_STATICLIB \
 +		 -m32 -march=i686 -mtune=generic
-+LDFLAGS = -m32 -shared -static-libgcc -lwinmm -lcurl
++LDFLAGS = -shared -static-libgcc -Wl,--gc-sections -L/usr/i686-w64-mingw32/lib
 +
-+# As "/usr/i686-w64-mingw32/bin/curl-config --cflags --static-libs" returns:
-+#     -I/usr/i686-w64-mingw32/include
-+#     curl was built with static libraries disabled
-+# You need to place this .dll files same place where engine is:
-+#
-+# cp -f /usr/i686-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3,curl-4,gcc_s_dw2-1,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/i686-w64-mingw32/bin/zlib1.dll .
++# curl and its deps (only ones we know exist)
++LDFLAGS += /usr/i686-w64-mingw32/lib/libcurl.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libnghttp2.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libpsl.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libidn2.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libbrotlidec.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libbrotlicommon.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libzstd.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libunistring.a
++
++# ssh2 (needs zlib)
++LDFLAGS += /usr/i686-w64-mingw32/lib/libssh2.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libz.a
++
++# OpenSSL (ssl first, then crypto)
++LDFLAGS += /usr/i686-w64-mingw32/lib/libssl.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libcrypto.a
++
++# windows / misc helpers
++LDFLAGS += /usr/i686-w64-mingw32/lib/libcrypt32.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libws2_32.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libwldap32.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libiconv.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libbcrypt.a
++LDFLAGS += /usr/i686-w64-mingw32/lib/libwinpthread.a
 +
 +# Project files
 +GAME_OBJS = \
@@ -174,10 +399,10 @@ index 0000000..f1567fd
 +-include $(OBJS:%.o=%.d)
 diff --git a/makefile.win64 b/makefile.win64
 new file mode 100644
-index 0000000..7f2f4e0
+index 0000000..2de2c32
 --- /dev/null
 +++ b/makefile.win64
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,99 @@
 +# Quake2 Jump Makefile
 +
 +# Complier flags
@@ -187,15 +412,35 @@ index 0000000..7f2f4e0
 +		 -Wno-unused-result \
 +		 -Wno-implicit-function-declaration \
 +		 -Wno-incompatible-pointer-types \
-+		 -Wno-pointer-to-int-cast
-+LDFLAGS = -shared -static-libgcc -lwinmm -lcurl
++		 -Wno-pointer-to-int-cast \
++		 -DHAVE_CURL -DCURL_STATICLIB
++LDFLAGS = -shared -static-libgcc -Wl,--gc-sections -L/usr/x86_64-w64-mingw32/lib
 +
-+# As "/usr/x86_64-w64-mingw32/bin/curl-config --cflags --static-libs" returns:
-+#     -I/usr/x86_64-w64-mingw32/include
-+#     curl was built with static libraries disabled
-+# You need to place this .dll files same place where engine is:
-+#
-+# cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3-x64,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/x86_64-w64-mingw32/bin/zlib1.dll .
++# curl and its deps (only ones we know exist)
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libcurl.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libnghttp2.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libpsl.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libidn2.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libbrotlidec.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libbrotlicommon.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libzstd.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libunistring.a
++
++# ssh2 (needs zlib)
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libssh2.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libz.a
++
++# OpenSSL (ssl first, then crypto)
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libssl.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libcrypto.a
++
++# windows / misc helpers
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libcrypt32.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libws2_32.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libwldap32.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libiconv.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libbcrypt.a
++LDFLAGS += /usr/x86_64-w64-mingw32/lib/libwinpthread.a
 +
 +# Project files
 +GAME_OBJS = \

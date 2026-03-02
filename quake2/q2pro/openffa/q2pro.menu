@@ -1,29 +1,24 @@
 include q2pro-common.menu
 
-begin main
-    title "QUAKE 2: openffa"
-    action "mods" pushmenu mods
-    action "start server" pushmenu startserver
-    blank
-    action "browse address book" pushmenu servers "favorites://" "file:///servers.lst" "broadcast://"
-    action "browse q2servers.com" pushmenu servers "+http://q2servers.com/?raw=2"
-    blank
-    action "browse demos" pushmenu demos
-    blank
-    action "quit" quit
-end
-
 begin game
-    background #0000ff80
-    action "ready" "ready; forcemenuoff"
+    background #0000ff70
+    style --compact
     action "menu" "menu; forcemenuoff"
+    action "join Home team" "join 1; forcemenuoff"
+    action "join Away team" "join 2; forcemenuoff"
+    action "READY" "ready; forcemenuoff"
+    action "NOT READY" "unready; forcemenuoff"
+    action "vote YES" "vote yes; forcemenuoff"
+    action "vote NO" "vote no; forcemenuoff"
+    action "spectator" "spectate; forcemenuoff"
+    action "follow console IP" "followip; forcemenuoff"
     blank
     action "browse address book" pushmenu servers "favorites://" "file:///servers.lst" "broadcast://"
     action "browse q2servers.com" pushmenu servers "+http://q2servers.com/?raw=2"
-    blank
     action "browse demos" pushmenu demos
     blank
-    action "disconnect" "disconnect"
+    action "options" pushmenu options
+    action "disconnect" disconnect
     action "quit" quit
 end
 

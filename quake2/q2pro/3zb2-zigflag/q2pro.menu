@@ -1,0 +1,49 @@
+include q2pro-common.menu
+
+begin game
+    background #0000ff70
+    style --compact
+    action "mod commands" pushmenu commands
+    action "mod key bindings" pushmenu bindings
+    action "cheats" pushmenu cheats
+    blank
+    action "browse address book" pushmenu servers "favorites://" "file:///servers.lst" "broadcast://"
+    action "browse q2servers.com" pushmenu servers "+http://q2servers.com/?raw=2"
+    action "browse demos" pushmenu demos
+    blank
+    action "options" pushmenu options
+    action "disconnect" disconnect
+    action "quit" quit
+end
+
+begin commands
+    title "Mod Commands"
+    //action "add bot" "spawn1; forcemenuoff"
+    //action "remove bot" "despawn1; forcemenuoff"
+    action "add bot" "sv spb 1"
+    action "remove bot" "sv rmb 1"
+end
+
+begin bindings
+    title "Mod Key Bindings"
+    bind "drop tech" "drop tech"
+    bind "drop flag" "drop flag"
+    bind "suicide" "kill"
+    blank
+    bind "use grapple hook" "use Grapple"
+    blank
+    bind "save position" "store"
+    bind "load position" "recall"
+    blank
+    bind "add bot" "sv spb 1"
+    bind "remove bot" "sv rmb 1"
+end
+
+begin cheats
+    title "Cheats"
+    action "toggle immortality" "god; forcemenuoff"
+    // give weapons
+    // give ammo
+    toggle "lightmaps" gl_lightmap
+end
+

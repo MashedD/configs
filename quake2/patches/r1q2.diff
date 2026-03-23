@@ -259,6 +259,32 @@ index c7a71ee..4cb1f99 100644
  	}
  
  // open /dev/dsp, confirm capability to mmap, and get size of dma buffer
+diff --git a/linux/vid_menu.c b/linux/vid_menu.c
+index a656036..0e8a273 100644
+--- a/linux/vid_menu.c
++++ b/linux/vid_menu.c
+@@ -182,6 +182,7 @@ void VID_MenuInit( void )
+ 		"[1152 864 ]",
+ 		"[1280 1024]",
+ 		"[1600 1200]",
++		"[1920 1080]",
+ 		0
+ 	};
+ 	static const char *refs[] =
+diff --git a/linux/vid_so.c b/linux/vid_so.c
+index 2b1d2c9..0f11cfd 100644
+--- a/linux/vid_so.c
++++ b/linux/vid_so.c
+@@ -132,7 +132,8 @@ vidmode_t vid_modes[] =
+ 	{ "Mode 6: 1024x768",  1024, 768,  6 },
+ 	{ "Mode 7: 1152x864",  1152, 864,  7 },
+ 	{ "Mode 8: 1280x1024",  1280, 1024, 8 },
+-	{ "Mode 9: 1600x1200", 1600, 1200, 9 }
++	{ "Mode 9: 1600x1200", 1600, 1200, 9 },
++	{ "Mode 10: 1920:1080", 1920, 1080, 10 }
+ };
+ 
+ qboolean VID_GetModeInfo(unsigned int *width, unsigned int *height, int mode)
 diff --git a/ref_gl/gl_image.c b/ref_gl/gl_image.c
 index 5e39628..6eefe26 100644
 --- a/ref_gl/gl_image.c

@@ -61,24 +61,7 @@ set freelook "1"
 
 - [jump](https://github.com/MashedD/jump) - my forked version + small changes (for cross compilation)
 
-- [openffa](https://github.com/packetflinger/openffa)
-
-```bash
-git clone https://github.com/packetflinger/openffa
-cd openffa
-wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/openffa.diff
-git apply openffa.diff
-rm -f openffa.diff
-
-# Linux 64-bit
-make
-
-# Windows 32-bit
-make CONFIG_FILE=.config-win32 clean all
-
-# Windows 64-bit
-make CONFIG_FILE=.config-win64 clean all
-```
+- [openffa](https://github.com/MashedD/openffa) - my forked version + small changes (for cross compilation)
 
 - [opentdm](https://github.com/packetflinger/opentdm)
 
@@ -99,7 +82,6 @@ make CONFIG_FILE=.config-win32 clean all
 make CONFIG_FILE=.config-win64 clean all
 ```
 
-- [openra2](https://github.com/packetflinger/openra2)
 - [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `quake2/patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `quake2/patches/DDaynormandyFPS-src-dday.diff`, `quake2/patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures). [Active Community](https://dday.cl/)
 - [Chaos](https://github.com/aginies/quake2)
 

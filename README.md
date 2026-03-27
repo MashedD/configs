@@ -8,7 +8,7 @@ Configs for games:
 
 ## Engines
 
-- [q2pro](https://github.com/MashedD/q2pro) - Skuller's repo doesn't longer exists, so here's up-to-date mirror + more changes.
+- [q2pro](https://github.com/MashedD/q2pro) - Skuller's repo doesn't longer exists, so here's up-to-date mirror + more changes
 
 - [r1q2](https://github.com/tastyspleen/r1q2-archive)
 
@@ -57,42 +57,9 @@ set freelook "1"
 
 ## Mods
 
-- [3zb2-zigflag](https://github.com/MashedD/3zb2-zigflag) - newest version + small changes (TDM, store/recall, ...). Those are best working bots for any map
+- [3zb2-zigflag](https://github.com/MashedD/3zb2-zigflag) - my forked version + small changes (TDM, store/recall, ...). Those are best working bots for any map
 
-- [jump](https://github.com/Grish44/q2jump-global-integration) - apply patch `quake2/patches/jump.diff`. Additionally you'll need gfx for keys and server config. And some maps.
-
-```bash
-git clone https://github.com/Grish44/q2jump-global-integration
-cd q2jump-global-integration
-wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/jump.diff
-git apply jump.diff
-rm -f jump.diff
-
-#
-# Linux 64-bit
-#
-
-# You might need curl4 preset in your system to make gamex86_64.so properly work
-make clean all
-
-#
-# Windows 32-bit
-#
-
-make -f makefile.win32 clean all
-# Because couldn't build with curl being linked statically:
-# Change dir to where your engine is and then:
-cp -f /usr/i686-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3,curl-4,gcc_s_dw2-1,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/i686-w64-mingw32/bin/zlib1.dll .
-
-#
-# Windows 64-bit
-#
-
-make -f makefile.win64 clean all
-# Because couldn't build with curl being linked statically:
-# Change dir to where your engine is and then:
-cp -f /usr/x86_64-w64-mingw32/bin/lib{brotlicommon,brotlidec,crypto-3-x64,curl-4,iconv-2,idn2-0,nghttp2-14,psl-5,ssh2,ssl-3-x64,ssp-0,unistring-5,winpthread-1,zstd}.dll /usr/x86_64-w64-mingw32/bin/zlib1.dll .
-```
+- [jump](https://github.com/MashedD/jump) - my forked version + small changes (for cross compilation)
 
 - [openffa](https://github.com/packetflinger/openffa)
 

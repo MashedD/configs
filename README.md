@@ -9,12 +9,10 @@ Configs for games:
 ## Engines
 
 - [q2pro](https://github.com/MashedD/q2pro) - Skuller's repo doesn't longer exists, so here's up-to-date mirror + more changes
-
 - [r1q2](https://github.com/tastyspleen/r1q2-archive)
 
-Building:
-
 ```bash
+# Building
 sudo pacman -S libpng sdl12-compat # Arch/Artix/CachyOS/Manjaro/...
 git clone https://github.com/tastyspleen/r1q2-archive.git
 cd r1q2-archive
@@ -23,65 +21,34 @@ git apply r1q2.diff
 cd binaries
 mkdir -p {r1q2ded,client,game,ref_gl}/.depends
 make
-```
 
-Copy files that were created to where your `r1q2` will be, like so:
-(all of them should have execute permissions)
+# Copy files that were created to where your `r1q2` will be, like so:
+# (all of them should have execute permissions)
+#     baseq2/gamex86_64.so
+#     quake2
+#     r1q2ded
+#     ref_gl.so
 
-```bash
-baseq2/gamex86_64.so
-quake2
-r1q2ded
-ref_gl.so
-```
+# Now copy files from non-remastered Quake 2:
+#     baseq2/players/
+#     baseq2/pak0.pak
+#     baseq2/pak1.pak
+#     baseq2/pak2.pak
 
-Now copy files from non-remastered Quake 2:
-
-```
-baseq2/players/
-baseq2/pak0.pak
-baseq2/pak1.pak
-baseq2/pak2.pak
-```
-
-Create `baseq2/autoexec.cfg` with at least:
-
-```
-set vid_ref "gl" // To use ref_gl.so
-set s_initsound "2" // OpenAL
-set gl_mode "10" // FullHD on my machine
-set _windowed_mouse "1" // Fix clipped mouse movement
-set cl_run "1"
-set freelook "1"
+# Create `baseq2/autoexec.cfg` with at least:
+#     set vid_ref "gl" // To use ref_gl.so
+#     set s_initsound "2" // OpenAL
+#     set _windowed_mouse "1" // Fix clipped mouse movement
+#     set cl_run "1"
+#     set freelook "1"
 ```
 
 ## Mods
 
 - [3zb2-zigflag](https://github.com/MashedD/3zb2-zigflag) - my forked version + small changes (TDM, store/recall, ...). Those are best working bots for any map
-
 - [jump](https://github.com/MashedD/jump) - my forked version + small changes (for cross compilation)
-
 - [openffa](https://github.com/MashedD/openffa) - my forked version + small changes (for cross compilation)
-
-- [opentdm](https://github.com/packetflinger/opentdm)
-
-```bash
-git clone https://github.com/packetflinger/opentdm
-cd opentdm
-wget https://raw.githubusercontent.com/MashedD/configs/refs/heads/master/quake2/patches/opentdm.diff
-git apply opentdm.diff
-rm -f opentdm.diff
-
-# Linux 64-bit
-make
-
-# Windows 32-bit
-make CONFIG_FILE=.config-win32 clean all
-
-# Windows 64-bit
-make CONFIG_FILE=.config-win64 clean all
-```
-
+- [opentdm](https://github.com/MashedD/opentdm) - my forked version + small changes (for cross compilation)
 - [DDay: Normandy FPS](https://github.com/PowaBanga/DDaynormandyFPS) - apply patches `quake2/patches/DDaynormandyFPS-src-q2admin-tsmod.diff`, `quake2/patches/DDaynormandyFPS-src-dday.diff`, `quake2/patches/DDaynormandyFPS.diff`. [Maps](https://www.moddb.com/games/dday-normandy/addons/dday-normandy-map-pack-and-hi-res-textures). [Active Community](https://dday.cl/)
 - [Chaos](https://github.com/aginies/quake2)
 

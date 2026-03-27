@@ -6,6 +6,7 @@ begin game
     action "store" "store; forcemenuoff"
     action "recall" "recall; forcemenuoff"
     action "replay best demo" "replay global; forcemenuoff"
+    action "vote time +5 mins" "votetime 5; forcemenuoff"
     blank
     action "browse address book" pushmenu servers "favorites://" "file:///servers.lst" "broadcast://"
     action "browse q2servers.com" pushmenu servers "+http://q2servers.com/?raw=2"

@@ -3,7 +3,9 @@ include q2pro-common.menu
 begin game
     background #0000ff70
     style --compact
+    action "practice" pushmenu practice
     action "mod commands" pushmenu commands
+    blank
     action "mod key bindings" pushmenu bindings
     action "cheats" pushmenu cheats
     blank
@@ -18,8 +20,6 @@ end
 
 begin commands
     title "Mod Commands"
-    //action "add bot" "spawn1; forcemenuoff"
-    //action "remove bot" "despawn1; forcemenuoff"
     action "add bot" "sv spb 1"
     action "remove bot" "sv rmb 1"
 end
@@ -42,8 +42,9 @@ end
 begin cheats
     title "Cheats"
     action "toggle immortality" "god; forcemenuoff"
-    // give weapons
-    // give ammo
-    toggle "lightmaps" gl_lightmap
+    action "give low-tier weapons" "give shotgun; give machinegun; give grenade launcher; give hyperblaster"
+    action "give best weapons" "give super shotgun; give chaingun; give rocket launcher; give railgun; give bfg10k"
+    action "give ammo" "give shells 999; give bullets 999; give grenades 999; give rockets 999; give slugs 999"
+    toggle "lightmaps" "gl_lightmap"
 end
 

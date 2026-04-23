@@ -29,15 +29,5 @@ Other:
 
 ## Paks
 
-TODO: Get paks from [quake2download.pl](https://quake2download.pl).
-
-## Remastered
-
-Visit [DarkMatter](https://darkmatter-quake.com/) and join Discord.
-Check `creations` section.
-You'll find There [Muff Mode](https://github.com/themuffinator/MuffMode), which is simliar to `opentdm`.
-When `Worr` engines is finished this mod will be deprecated.
-You can also use a [Map Trainer](https://github.com/ozy24/q2re-map-trainer), which is similar
-to what `jump` mod allows - saving and restoring player's position.
-Also additional paks and maps for Remaster and option to play ladder tournaments.
+Get paks from [quake2download.pl](https://quake2download.pl).
 
